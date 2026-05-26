@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscrições - Serviços de Atendimento</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 40px;
+        }
+
+        body.custom-bg {
+            background: var(--bg-image) center/cover no-repeat fixed;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header-section h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .header-section p {
+            font-size: 16px;
+            opacity: 0.95;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="password"],
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input[type="text"]:focus,
+        .form-group input[type="password"]:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .form-container {
+            padding: 30px;
+        }
+
+        .success-msg {
+            background: #d4edda;
+            color: #155724;
+            padding: 14px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            border: 1px solid #c3e6cb;
+            display: none;
+        }
+
+        .error-msg {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 14px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            border: 1px solid #f5c6cb;
+            display: none;
+        }
+
+        .warning-msg {
+            background: #fff3cd;
+            color: #856404;
+            padding: 14px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            border: 1px solid #ffeaa7;
+            display: none;
+        }
+
+        .form-input-group {
+            margin-bottom: 18px;
+        }
+
+        .form-input-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .form-input-group label span {
+            color: #e74c3c;
+        }
+
+        .form-input-group select,
+        .form-input-group input[type="text"],
+        .form-input-group input[type="email"],
+        .form-input-group input[type="tel"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .form-input-group select:focus,
+        .form-input-group input[type="text"]:focus,
+        .form-input-group input[type="email"]:focus,
+        .form-input-group input[type="tel"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-input-group select:disabled {
+            background-color: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        .course-details {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            border-left: 4px solid #667eea;
+        }
+
+        .course-details.show {
+            display: block;
+        }
+
+        .course-details.closed {
+            background: #f8d7da;
+            border-left-color: #e74c3c;
+        }
+
+        .course-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .course-details.closed .course-title {
+            color: #721c24;
+        }
+
+        .course-desc {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .course-details.closed .course-desc {
+            color: #721c24;
+        }
+
+        .vacancy-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .vacancy-label {
+            font-size: 12px;
+            color: #666;
+            min-width: 50px;
+        }
+
+        .bar {
+            flex: 1;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: #667eea;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .bar-full {
+            background: #e74c3c;
+        }
+
+        .vacancy-text {
+            font-size: 13px;
+            color: #666;
+            min-width: 100px;
+            text-align: right;
+        }
+
+        .vacancy-open {
+            font-size: 13px;
+            color: #27ae60;
+            font-weight: 600;
+            min-width: 100px;
+        }
+
+        .vacancy-closed {
+            font-size: 13px;
+            color: #e74c3c;
+            font-weight: 600;
+            min-width: 100px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #999;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .footer-text {
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        /* Admin Styles */
+        .admin-container {
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .admin-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .admin-header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .admin-content {
+            padding: 30px;
+        }
+
+        .admin-section {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .admin-section:last-child {
+            border-bottom: none;
+        }
+
+        .admin-section h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .admin-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .admin-btn {
+            flex: 1;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .admin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .admin-btn.danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .vacancy-stat {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .vacancy-stat h3 {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .vacancy-stat-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .vacancy-stat-bar .bar {
+            flex: 1;
+            height: 8px;
+        }
+
+        .vacancy-stat-count {
+            font-size: 13px;
+            color: #666;
+            min-width: 80px;
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .stat-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .logout-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .logout-link:hover {
+            text-decoration: underline;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .login-container h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .login-container p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .login-container input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .login-container input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .error-box {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            border: 1px solid #f5c6cb;
+            display: none;
+            font-size: 13px;
+        }
+
+        .setup-box {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #bee5eb;
+            margin-bottom: 20px;
+        }
+
+        .setup-box h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .setup-box p {
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .setup-box code {
+            background: rgba(255, 255, 255, 0.5);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+                padding-top: 20px;
+            }
+
+            .header-section {
+                padding: 30px 20px;
+            }
+
+            .header-section h1 {
+                font-size: 24px;
+            }
+
+            .form-container {
+                padding: 20px;
+            }
+
+            .admin-content {
+                padding: 20px;
+            }
+
+            .login-container {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Página Principal -->
+    <div id="mainPage" class="hidden">
+        <div class="container">
+            <div class="header-section">
+                <h1 id="headerTitle">Inscreva-se nos nossos serviços</h1>
+                <p id="headerDesc">Escolha uma das modalidades abaixo e preencha seus dados para se inscrever</p>
+            </div>
+
+            <div class="form-container">
+                <div id="successMsg" class="success-msg"></div>
+                <div id="errorMsg" class="error-msg"></div>
+                <div id="warningMsg" class="warning-msg"></div>
+
+                <form id="inscriptionForm">
+                    <div class="form-input-group">
+                        <label>Qual tipo de atendimento deseja?<span>*</span></label>
+                        <select id="courseSelect" required>
+                            <option value="">-- Selecione um tipo de atendimento --</option>
+                            <option value="0">Consulta (24 vagas)</option>
+                            <option value="1">Axé Individual (8 vagas)</option>
+                            <option value="2">Axé Coletivo (vagas ilimitadas)</option>
+                        </select>
+                    </div>
+
+                    <div id="courseDetails" class="course-details">
+                        <div class="course-title" id="courseDetailTitle"></div>
+                        <div class="course-desc" id="courseDetailDesc"></div>
+                        <div class="vacancy-bar">
+                            <span class="vacancy-label">Vagas:</span>
+                            <div class="bar">
+                                <div class="bar-fill" id="courseDetailBar"></div>
+                            </div>
+                            <span id="courseDetailVacancy" class="vacancy-text"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-input-group" id="formInputs" style="display: none;">
+                        <label>Nome completo<span>*</span></label>
+                        <input type="text" id="fullName" placeholder="Seu nome completo" required>
+                    </div>
+
+                    <div class="form-input-group" id="formInputs2" style="display: none;">
+                        <label>Email<span>*</span></label>
+                        <input type="email" id="email" placeholder="seu.email@exemplo.com" required>
+                    </div>
+
+                    <div class="form-input-group" id="formInputs3" style="display: none;">
+                        <label>Telefone</label>
+                        <input type="tel" id="phone" placeholder="(00) 9 0000-0000">
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn" style="display: none;">Confirmar Inscrição</button>
+                </form>
+
+                <div class="footer-text">
+                    Seus dados estão seguros e nunca serão compartilhados
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Página Admin (Login) -->
+    <div id="loginPage" class="hidden">
+        <div class="login-container">
+            <h1>Painel Admin</h1>
+            <p>Digite a senha para acessar</p>
+            <div class="error-box" id="loginError"></div>
+            <input type="password" id="adminPassword" placeholder="Senha" onkeypress="if(event.key==='Enter') loginAdmin()">
+            <button class="login-btn" onclick="loginAdmin()">Entrar</button>
+        </div>
+    </div>
+
+    <!-- Página Admin (Conteúdo) -->
+    <div id="adminPage" class="hidden">
+        <div class="admin-container">
+            <div class="admin-header">
+                <h1>Painel Administrativo</h1>
+                <p>Gerencie as inscrições e vagas</p>
+            </div>
+
+            <div class="admin-content">
+                <div class="setup-box" id="setupBox" style="display: none;">
+                    <h3>⚠️ Configuração necessária!</h3>
+                    <p>Para usar o sistema de vagas, você precisa configurar o Firebase.</p>
+                    <p>Siga os passos em: <strong>Gerenciar Banco de Dados</strong></p>
+                </div>
+
+                <!-- Gerenciar Vagas -->
+                <div class="admin-section">
+                    <h2>📊 Gerenciar Vagas</h2>
+                    
+                    <div class="vacancy-stat">
+                        <h3>Consulta (Máximo: 24)</h3>
+                        <div class="vacancy-stat-bar">
+                            <div class="bar">
+                                <div class="bar-fill" id="bar0"></div>
+                            </div>
+                            <span class="vacancy-stat-count" id="count0">0 / 24</span>
+                        </div>
+                        <p style="font-size: 12px; color: #666; margin-top: 8px;" id="status0"></p>
+                    </div>
+
+                    <div class="vacancy-stat">
+                        <h3>Axé Individual (Máximo: 8)</h3>
+                        <div class="vacancy-stat-bar">
+                            <div class="bar">
+                                <div class="bar-fill" id="bar1"></div>
+                            </div>
+                            <span class="vacancy-stat-count" id="count1">0 / 8</span>
+                        </div>
+                        <p style="font-size: 12px; color: #666; margin-top: 8px;" id="status1"></p>
+                    </div>
+
+                    <div class="vacancy-stat">
+                        <h3>Axé Coletivo (Ilimitado)</h3>
+                        <div class="vacancy-stat-bar">
+                            <div class="bar">
+                                <div class="bar-fill" id="bar2" style="width: 0%"></div>
+                            </div>
+                            <span class="vacancy-stat-count" id="count2">Aberto</span>
+                        </div>
+                        <p style="font-size: 12px; color: #27ae60; margin-top: 8px;">✓ Sempre disponível</p>
+                    </div>
+                </div>
+
+                <!-- Configurar Banco de Dados -->
+                <div class="admin-section">
+                    <h2>🔧 Gerenciar Banco de Dados</h2>
+                    <p style="font-size: 14px; color: #666; margin-bottom: 16px;">Configure a conexão com Firebase para rastrear inscrições em tempo real.</p>
+                    
+                    <div class="form-group">
+                        <label>API Key do Firebase:</label>
+                        <input type="text" id="firebaseKey" class="stat-input" placeholder="AIzaSyD...">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Project ID:</label>
+                        <input type="text" id="firebaseProjectId" class="stat-input" placeholder="seu-projeto">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Database URL:</label>
+                        <input type="text" id="firebaseDatabaseUrl" class="stat-input" placeholder="https://seu-projeto.firebaseio.com">
+                    </div>
+
+                    <div style="background: #f0f7ff; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; color: #0c5460;">
+                        <p><strong>Como obter essas informações:</strong></p>
+                        <ol style="margin-left: 20px; margin-top: 8px; line-height: 1.8;">
+                            <li>Acesse <a href="https://console.firebase.google.com" target="_blank" style="color: #0c5460; text-decoration: underline;">console.firebase.google.com</a></li>
+                            <li>Crie um novo projeto (ou use um existente)</li>
+                            <li>Vá em Configurações do Projeto → Chaves e Credenciais</li>
+                            <li>Copie a API Key, Project ID e Database URL</li>
+                            <li>Cole aqui e clique em "Conectar"</li>
+                        </ol>
+                    </div>
+
+                    <div class="admin-buttons">
+                        <button class="admin-btn" onclick="saveFirebaseConfig()">💾 Conectar Firebase</button>
+                        <button class="admin-btn danger" onclick="clearAllData()">🗑️ Limpar Todos os Dados</button>
+                    </div>
+                </div>
+
+                <!-- Editar Texto -->
+                <div class="admin-section">
+                    <h2>✏️ Editar Texto</h2>
+                    <div class="form-group">
+                        <label>Título principal:</label>
+                        <input type="text" id="adminTitle" class="stat-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Descrição:</label>
+                        <textarea id="adminDesc" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 14px; min-height: 80px;"></textarea>
+                    </div>
+                    <div class="admin-buttons">
+                        <button class="admin-btn" onclick="saveTextChanges()">💾 Salvar Texto</button>
+                    </div>
+                </div>
+
+                <!-- Logout -->
+                <a href="#" onclick="logout()" class="logout-link">← Sair do Painel</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js"></script>
+    <script>
+        const ADMIN_PASSWORD = "admin123";
+        const courses = [
+            { name: "Consulta", desc: "Serviço de consulta personalizada.", vagas: 24 },
+            { name: "Axé Individual", desc: "Sessão individual de axé para você.", vagas: 8 },
+            { name: "Axé Coletivo", desc: "Reunião coletiva de axé aberta a todos.", vagas: Infinity }
+        ];
+
+        let adminLoggedIn = false;
+        let firebaseConfigured = false;
+        let db = null;
+        let inscriptions = { 0: [], 1: [], 2: [] };
+        let headerTitle = "Inscreva-se nos nossos serviços";
+        let headerDesc = "Escolha uma das modalidades abaixo e preencha seus dados para se inscrever";
+
+        // Inicializar
+        function initPage() {
+            const path = window.location.pathname;
+            
+            loadLocalData();
+            initializeFirebase();
+
+            if (path.includes("/admin") || window.location.hash === "#admin") {
+                showAdminPage();
+            } else {
+                showMainPage();
+            }
+        }
+
+        function loadLocalData() {
+            if (localStorage.getItem("headerTitle")) {
+                headerTitle = localStorage.getItem("headerTitle");
+            }
+            if (localStorage.getItem("headerDesc")) {
+                headerDesc = localStorage.getItem("headerDesc");
+            }
+            if (localStorage.getItem("adminLoggedIn") === "true") {
+                adminLoggedIn = true;
+            }
+        }
+
+        function initializeFirebase() {
+            const key = localStorage.getItem("firebaseKey");
+            const projectId = localStorage.getItem("firebaseProjectId");
+            const databaseUrl = localStorage.getItem("firebaseDatabaseUrl");
+
+            if (key && projectId && databaseUrl) {
+                try {
+                    const firebaseConfig = {
+                        apiKey: key,
+                        projectId: projectId,
+                        databaseURL: databaseUrl,
+                        appId: "1:1:web:1"
+                    };
+
+                    if (!firebase.apps.length) {
+                        firebase.initializeApp(firebaseConfig);
+                    }
+                    db = firebase.database();
+                    firebaseConfigured = true;
+
+                    // Carregar dados do Firebase
+                    loadInscriptionsFromFirebase();
+                } catch (error) {
+                    console.error("Erro ao configurar Firebase:", error);
+                    firebaseConfigured = false;
+                }
+            }
+        }
+
+        function loadInscriptionsFromFirebase() {
+            if (!db) return;
+
+            db.ref("inscriptions").on("value", (snapshot) => {
+                inscriptions = { 0: [], 1: [], 2: [] };
+                
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    Object.values(data).forEach(inscription => {
+                        const courseIdx = parseInt(inscription.courseIndex);
+                        if (inscriptions[courseIdx]) {
+                            inscriptions[courseIdx].push(inscription);
+                        }
+                    });
+                }
+
+                updateVacancyDisplay();
+            });
+        }
+
+        function updateVacancyDisplay() {
+            for (let i = 0; i < 3; i++) {
+                const count = inscriptions[i].length;
+                const max = courses[i].vagas;
+                const percentage = (count / max) * 100;
+
+                document.getElementById(`count${i}`).textContent = 
+                    i === 2 ? "Aberto" : `${count} / ${max}`;
+                
+                const bar = document.getElementById(`bar${i}`);
+                if (bar) {
+                    bar.style.width = i === 2 ? "0%" : Math.min(percentage, 100) + "%";
+                    bar.className = percentage >= 100 ? "bar-fill bar-full" : "bar-fill";
+                }
+
+                const status = document.getElementById(`status${i}`);
+                if (status && i !== 2) {
+                    if (count >= max) {
+                        status.textContent = "❌ ENCERRADO - Vagas lotadas";
+                        status.style.color = "#e74c3c";
+                    } else {
+                        status.textContent = `✓ Vagas disponíveis (${max - count} restantes)`;
+                        status.style.color = "#27ae60";
+                    }
+                }
+            }
+        }
+
+        function showMainPage() {
+            document.getElementById("mainPage").classList.remove("hidden");
+            document.getElementById("loginPage").classList.add("hidden");
+            document.getElementById("adminPage").classList.add("hidden");
+            updateMainPageText();
+            setupFormHandlers();
+        }
+
+        function showAdminPage() {
+            if (adminLoggedIn) {
+                document.getElementById("mainPage").classList.add("hidden");
+                document.getElementById("loginPage").classList.add("hidden");
+                document.getElementById("adminPage").classList.remove("hidden");
+                loadAdminData();
+                updateVacancyDisplay();
+            } else {
+                document.getElementById("mainPage").classList.add("hidden");
+                document.getElementById("loginPage").classList.remove("hidden");
+                document.getElementById("adminPage").classList.add("hidden");
+            }
+        }
+
+        function loginAdmin() {
+            const password = document.getElementById("adminPassword").value;
+            const errorBox = document.getElementById("loginError");
+
+            if (password === ADMIN_PASSWORD) {
+                adminLoggedIn = true;
+                localStorage.setItem("adminLoggedIn", "true");
+                document.getElementById("adminPassword").value = "";
+                errorBox.style.display = "none";
+                showAdminPage();
+            } else {
+                errorBox.textContent = "Senha incorreta!";
+                errorBox.style.display = "block";
+            }
+        }
+
+        function logout() {
+            adminLoggedIn = false;
+            localStorage.removeItem("adminLoggedIn");
+            window.location.hash = "";
+            showMainPage();
+        }
+
+        function loadAdminData() {
+            document.getElementById("adminTitle").value = headerTitle;
+            document.getElementById("adminDesc").value = headerDesc;
+            
+            if (localStorage.getItem("firebaseKey")) {
+                document.getElementById("firebaseKey").value = localStorage.getItem("firebaseKey");
+                document.getElementById("firebaseProjectId").value = localStorage.getItem("firebaseProjectId");
+                document.getElementById("firebaseDatabaseUrl").value = localStorage.getItem("firebaseDatabaseUrl");
+                document.getElementById("setupBox").style.display = "none";
+            } else {
+                document.getElementById("setupBox").style.display = "block";
+            }
+        }
+
+        function saveTextChanges() {
+            const title = document.getElementById("adminTitle").value.trim();
+            const desc = document.getElementById("adminDesc").value.trim();
+
+            if (!title) {
+                alert("O título não pode estar vazio!");
+                return;
+            }
+
+            headerTitle = title;
+            headerDesc = desc;
+
+            localStorage.setItem("headerTitle", headerTitle);
+            localStorage.setItem("headerDesc", headerDesc);
+
+            updateMainPageText();
+            alert("Texto salvo com sucesso!");
+        }
+
+        function saveFirebaseConfig() {
+            const key = document.getElementById("firebaseKey").value.trim();
+            const projectId = document.getElementById("firebaseProjectId").value.trim();
+            const databaseUrl = document.getElementById("firebaseDatabaseUrl").value.trim();
+
+            if (!key || !projectId || !databaseUrl) {
+                alert("Preencha todos os campos!");
+                return;
+            }
+
+            localStorage.setItem("firebaseKey", key);
+            localStorage.setItem("firebaseProjectId", projectId);
+            localStorage.setItem("firebaseDatabaseUrl", databaseUrl);
+
+            initializeFirebase();
+            alert("Firebase conectado com sucesso!");
+            document.getElementById("setupBox").style.display = "none";
+        }
+
+        function clearAllData() {
+            if (!confirm("Tem certeza? Isso vai apagar todas as inscrições!")) return;
+
+            if (db) {
+                db.ref("inscriptions").remove().then(() => {
+                    inscriptions = { 0: [], 1: [], 2: [] };
+                    updateVacancyDisplay();
+                    alert("Todos os dados foram apagados!");
+                });
+            } else {
+                inscriptions = { 0: [], 1: [], 2: [] };
+                alert("Dados locais foram apagados!");
+            }
+        }
+
+        function updateMainPageText() {
+            document.getElementById("headerTitle").textContent = headerTitle;
+            document.getElementById("headerDesc").textContent = headerDesc;
+        }
+
+        function setupFormHandlers() {
+            const courseSelect = document.getElementById("courseSelect");
+            const courseDetails = document.getElementById("courseDetails");
+            const courseDetailTitle = document.getElementById("courseDetailTitle");
+            const courseDetailDesc = document.getElementById("courseDetailDesc");
+            const courseDetailBar = document.getElementById("courseDetailBar");
+            const courseDetailVacancy = document.getElementById("courseDetailVacancy");
+            const form = document.getElementById("inscriptionForm");
+            const successMsg = document.getElementById("successMsg");
+            const errorMsg = document.getElementById("errorMsg");
+            const warningMsg = document.getElementById("warningMsg");
+            const formInputs = document.querySelectorAll("[id^='formInputs']");
+            const submitBtn = document.getElementById("submitBtn");
+
+            courseSelect.addEventListener("change", function() {
+                successMsg.style.display = "none";
+                errorMsg.style.display = "none";
+                warningMsg.style.display = "none";
+
+                if (this.value === "") {
+                    courseDetails.classList.remove("show");
+                    courseDetails.classList.remove("closed");
+                    formInputs.forEach(el => el.style.display = "none");
+                    submitBtn.style.display = "none";
+                    return;
+                }
+                
+                const idx = parseInt(this.value);
+                const course = courses[idx];
+                const count = inscriptions[idx] ? inscriptions[idx].length : 0;
+                const isFull = count >= course.vagas && course.vagas !== Infinity;
+
+                courseDetailTitle.textContent = course.name;
+                courseDetailDesc.textContent = course.desc;
+
+                if (isFull) {
+                    courseDetails.classList.add("closed");
+                    courseDetailTitle.textContent = "❌ " + course.name + " - ENCERRADO";
+                    courseDetailDesc.textContent = "As vagas se encerraram, vá para a próxima por favor";
+                    courseDetailBar.style.width = "100%";
+                    courseDetailVacancy.className = "vacancy-closed";
+                    courseDetailVacancy.textContent = `${count} / ${course.vagas}`;
+                    formInputs.forEach(el => el.style.display = "none");
+                    submitBtn.style.display = "none";
+                } else if (course.vagas === Infinity) {
+                    courseDetails.classList.remove("closed");
+                    courseDetailVacancy.className = "vacancy-open";
+                    courseDetailVacancy.textContent = "Aberto";
+                    courseDetailBar.style.width = "0%";
+                    courseDetailBar.parentElement.style.display = "none";
+                    formInputs.forEach(el => el.style.display = "block");
+                    submitBtn.style.display = "block";
+                } else {
+                    courseDetails.classList.remove("closed");
+                    const percentual = (count / course.vagas) * 100;
+                    courseDetailBar.style.width = percentual + "%";
+                    courseDetailVacancy.className = "vacancy-text";
+                    courseDetailVacancy.textContent = `${count} / ${course.vagas}`;
+                    courseDetailBar.parentElement.style.display = "flex";
+                    formInputs.forEach(el => el.style.display = "block");
+                    submitBtn.style.display = "block";
+                }
+                
+                courseDetails.classList.add("show");
+            });
+
+            form.addEventListener("submit", function(e) {
+                e.preventDefault();
+                
+                const courseIdx = parseInt(courseSelect.value);
+                const course = courses[courseIdx];
+                const count = inscriptions[courseIdx] ? inscriptions[courseIdx].length : 0;
+
+                if (count >= course.vagas && course.vagas !== Infinity) {
+                    errorMsg.textContent = "As vagas se encerraram, vá para a próxima por favor";
+                    errorMsg.style.display = "block";
+                    return;
+                }
+
+                const userData = {
+                    courseIndex: courseIdx,
+                    courseName: course.name,
+                    fullName: document.getElementById("fullName").value,
+                    email: document.getElementById("email").value,
+                    phone: document.getElementById("phone").value,
+                    timestamp: new Date().toISOString()
+                };
+
+                if (db) {
+                    db.ref("inscriptions").push(userData).then(() => {
+                        successMsg.textContent = `Parabéns ${userData.fullName}! Sua inscrição em "${course.name}" foi confirmada. Verifique seu email para mais informações.`;
+                        successMsg.style.display = "block";
+                        errorMsg.style.display = "none";
+                        form.reset();
+                        courseDetails.classList.remove("show");
+                        courseSelect.value = "";
+                        formInputs.forEach(el => el.style.display = "none");
+                        submitBtn.style.display = "none";
+                    }).catch(error => {
+                        errorMsg.textContent = "Erro ao enviar inscrição. Tente novamente.";
+                        errorMsg.style.display = "block";
+                    });
+                } else {
+                    warningMsg.textContent = "⚠️ Firebase não configurado. As inscrições não serão salvas. Configure no painel admin.";
+                    warningMsg.style.display = "block";
+                    successMsg.textContent = `Parabéns ${userData.fullName}! Sua inscrição em "${course.name}" foi confirmada (offline).`;
+                    successMsg.style.display = "block";
+                }
+            });
+        }
+
+        window.addEventListener("load", initPage);
+        window.addEventListener("hashchange", initPage);
+    </script>
+</body>
+</html>
