@@ -125,17 +125,6 @@
             display: none;
         }
 
-        .warning-msg {
-            background: #fff3cd;
-            color: #856404;
-            padding: 14px 16px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            border: 1px solid #ffeaa7;
-            display: none;
-        }
-
         .form-input-group {
             margin-bottom: 18px;
         }
@@ -297,22 +286,6 @@
             background: #999;
         }
 
-        .loading {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top: 2px solid white;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-right: 8px;
-            vertical-align: middle;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
         .footer-text {
             font-size: 12px;
             color: #999;
@@ -370,10 +343,12 @@
             display: flex;
             gap: 10px;
             margin-top: 16px;
+            flex-wrap: wrap;
         }
 
         .admin-btn {
             flex: 1;
+            min-width: 150px;
             padding: 12px 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -516,35 +491,6 @@
             font-size: 13px;
         }
 
-        .setup-box {
-            background: #d1ecf1;
-            color: #0c5460;
-            padding: 16px;
-            border-radius: 8px;
-            border: 1px solid #bee5eb;
-            margin-bottom: 20px;
-        }
-
-        .setup-box h3 {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .setup-box p {
-            font-size: 13px;
-            line-height: 1.6;
-            margin-bottom: 10px;
-        }
-
-        .setup-box code {
-            background: rgba(255, 255, 255, 0.5);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 12px;
-        }
-
         .file-input-wrapper {
             position: relative;
             overflow: hidden;
@@ -584,6 +530,42 @@
             border-left: 4px solid #667eea;
         }
 
+        .inscriptions-list {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .inscription-item {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 3px solid #667eea;
+            font-size: 13px;
+        }
+
+        .inscription-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .inscription-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .inscription-email {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .inscription-date {
+            color: #999;
+            font-size: 11px;
+        }
+
         .hidden {
             display: none !important;
         }
@@ -613,6 +595,15 @@
             .login-container {
                 padding: 30px 20px;
             }
+
+            .admin-buttons {
+                flex-direction: column;
+            }
+
+            .admin-btn {
+                flex: unset;
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -628,7 +619,6 @@
             <div class="form-container">
                 <div id="successMsg" class="success-msg"></div>
                 <div id="errorMsg" class="error-msg"></div>
-                <div id="warningMsg" class="warning-msg"></div>
 
                 <form id="inscriptionForm">
                     <div class="form-input-group">
@@ -694,16 +684,10 @@
         <div class="admin-container">
             <div class="admin-header">
                 <h1>Painel Administrativo</h1>
-                <p>Gerencie as inscrições, vagas e personalizações</p>
+                <p>Gerencie as inscrições e personalizações</p>
             </div>
 
             <div class="admin-content">
-                <div class="setup-box" id="setupBox" style="display: none;">
-                    <h3>⚠️ Configuração necessária!</h3>
-                    <p>Para usar o sistema de vagas, você precisa configurar o Firebase.</p>
-                    <p>Siga os passos em: <strong>Gerenciar Banco de Dados</strong></p>
-                </div>
-
                 <!-- Gerenciar Vagas -->
                 <div class="admin-section">
                     <h2>📊 Gerenciar Vagas</h2>
@@ -742,47 +726,22 @@
                     </div>
                 </div>
 
-                <!-- Configurar Banco de Dados -->
+                <!-- Ver Inscrições -->
                 <div class="admin-section">
-                    <h2>🔧 Gerenciar Banco de Dados</h2>
-                    <p style="font-size: 14px; color: #666; margin-bottom: 16px;">Configure a conexão com Firebase para rastrear inscrições em tempo real.</p>
-                    
-                    <div class="form-group">
-                        <label>API Key do Firebase:</label>
-                        <input type="text" id="firebaseKey" class="stat-input" placeholder="AIzaSyD...">
+                    <h2>📝 Inscrições Recebidas</h2>
+                    <div id="inscriptionsList" class="inscriptions-list">
+                        <p style="text-align: center; color: #999; padding: 20px;">Nenhuma inscrição ainda</p>
                     </div>
-
-                    <div class="form-group">
-                        <label>Project ID:</label>
-                        <input type="text" id="firebaseProjectId" class="stat-input" placeholder="seu-projeto">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Database URL:</label>
-                        <input type="text" id="firebaseDatabaseUrl" class="stat-input" placeholder="https://seu-projeto.firebaseio.com">
-                    </div>
-
-                    <div style="background: #f0f7ff; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; color: #0c5460;">
-                        <p><strong>Como obter essas informações:</strong></p>
-                        <ol style="margin-left: 20px; margin-top: 8px; line-height: 1.8;">
-                            <li>Acesse <a href="https://console.firebase.google.com" target="_blank" style="color: #0c5460; text-decoration: underline;">console.firebase.google.com</a></li>
-                            <li>Crie um novo projeto (ou use um existente)</li>
-                            <li>Vá em Configurações do Projeto → Chaves e Credenciais</li>
-                            <li>Copie a API Key, Project ID e Database URL</li>
-                            <li>Cole aqui e clique em "Conectar"</li>
-                        </ol>
-                    </div>
-
                     <div class="admin-buttons">
-                        <button class="admin-btn" onclick="saveFirebaseConfig()">💾 Conectar Firebase</button>
-                        <button class="admin-btn danger" onclick="clearAllData()">🗑️ Limpar Todos os Dados</button>
+                        <button class="admin-btn" onclick="downloadInscriptions()">📥 Baixar como CSV</button>
+                        <button class="admin-btn danger" onclick="clearAllInscriptions()">🗑️ Apagar Inscrições</button>
                     </div>
                 </div>
 
                 <!-- Personalizar Fundo -->
                 <div class="admin-section">
                     <h2>🎨 Personalizar Fundo</h2>
-                    <p style="font-size: 14px; color: #666; margin-bottom: 16px;">Envie uma imagem para usar como fundo com transparência. A imagem será redimensionada automaticamente com azul claro no topo e embaixo.</p>
+                    <p style="font-size: 14px; color: #666; margin-bottom: 16px;">Envie uma imagem para usar como fundo com transparência. A imagem terá azul claro no topo e embaixo.</p>
                     <div class="file-input-wrapper">
                         <input type="file" id="backgroundFile" accept="image/*" onchange="previewBackground(event)">
                         <label class="file-input-label" for="backgroundFile">
@@ -795,7 +754,6 @@
                             <li>Tamanho recomendado: até 5MB</li>
                             <li>Formato: JPG, PNG, WebP</li>
                             <li>Resolução: 1920x1080px ou maior</li>
-                            <li>A imagem terá transparência com azul claro no topo e embaixo</li>
                         </ul>
                     </div>
                     <div class="admin-buttons">
@@ -830,8 +788,6 @@
         </div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js"></script>
     <script>
         const ADMIN_PASSWORD = "admin123";
         const courses = [
@@ -841,19 +797,17 @@
         ];
 
         let adminLoggedIn = false;
-        let firebaseConfigured = false;
-        let db = null;
         let inscriptions = { 0: [], 1: [], 2: [] };
         let headerTitle = "Inscreva-se nos nossos serviços";
         let headerDesc = "Escolha uma das modalidades abaixo e preencha seus dados para se inscrever";
         let backgroundImage = null;
+        let tempBackgroundImage = null;
 
         // Inicializar
         function initPage() {
             const path = window.location.pathname;
             
             loadLocalData();
-            initializeFirebase();
 
             if (path.includes("/admin") || window.location.hash === "#admin") {
                 showAdminPage();
@@ -876,59 +830,35 @@
                 backgroundImage = localStorage.getItem("backgroundImage");
                 applyBackground();
             }
+            
+            // Carregar inscrições
+            loadInscriptions();
         }
 
-        function initializeFirebase() {
-            const key = localStorage.getItem("firebaseKey");
-            const projectId = localStorage.getItem("firebaseProjectId");
-            const databaseUrl = localStorage.getItem("firebaseDatabaseUrl");
-
-            if (key && projectId && databaseUrl) {
-                try {
-                    const firebaseConfig = {
-                        apiKey: key,
-                        projectId: projectId,
-                        databaseURL: databaseUrl,
-                        appId: "1:1:web:1"
-                    };
-
-                    if (!firebase.apps.length) {
-                        firebase.initializeApp(firebaseConfig);
+        function loadInscriptions() {
+            inscriptions = { 0: [], 1: [], 2: [] };
+            
+            for (let i = 0; i < 3; i++) {
+                const data = localStorage.getItem(`inscriptions_${i}`);
+                if (data) {
+                    try {
+                        inscriptions[i] = JSON.parse(data);
+                    } catch (e) {
+                        inscriptions[i] = [];
                     }
-                    db = firebase.database();
-                    firebaseConfigured = true;
-
-                    loadInscriptionsFromFirebase();
-                } catch (error) {
-                    console.error("Erro ao configurar Firebase:", error);
-                    firebaseConfigured = false;
                 }
             }
         }
 
-        function loadInscriptionsFromFirebase() {
-            if (!db) return;
-
-            db.ref("inscriptions").on("value", (snapshot) => {
-                inscriptions = { 0: [], 1: [], 2: [] };
-                
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    Object.values(data).forEach(inscription => {
-                        const courseIdx = parseInt(inscription.courseIndex);
-                        if (inscriptions[courseIdx]) {
-                            inscriptions[courseIdx].push(inscription);
-                        }
-                    });
-                }
-
-                updateVacancyDisplay();
-            });
+        function saveInscriptions() {
+            for (let i = 0; i < 3; i++) {
+                localStorage.setItem(`inscriptions_${i}`, JSON.stringify(inscriptions[i]));
+            }
         }
 
         function updateVacancyDisplay() {
             for (let i = 0; i < 3; i++) {
-                const count = inscriptions[i] ? inscriptions[i].length : 0;
+                const count = inscriptions[i].length;
                 const max = courses[i].vagas;
                 const percentage = (count / max) * 100;
 
@@ -952,6 +882,48 @@
                     }
                 }
             }
+
+            // Atualizar lista de inscrições
+            updateInscriptionsList();
+        }
+
+        function updateInscriptionsList() {
+            const list = document.getElementById("inscriptionsList");
+            let allInscriptions = [];
+
+            for (let i = 0; i < 3; i++) {
+                inscriptions[i].forEach(insc => {
+                    allInscriptions.push({
+                        ...insc,
+                        courseIndex: i
+                    });
+                });
+            }
+
+            if (allInscriptions.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">Nenhuma inscrição ainda</p>';
+                return;
+            }
+
+            // Ordenar por data (mais recentes primeiro)
+            allInscriptions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            let html = '';
+            allInscriptions.forEach(insc => {
+                const date = new Date(insc.timestamp);
+                const dateStr = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR');
+                
+                html += `
+                    <div class="inscription-item">
+                        <div class="inscription-name">✓ ${insc.fullName}</div>
+                        <div class="inscription-email">${insc.email}</div>
+                        ${insc.phone ? `<div class="inscription-email">${insc.phone}</div>` : ''}
+                        <div class="inscription-date">${courses[insc.courseIndex].name} • ${dateStr}</div>
+                    </div>
+                `;
+            });
+
+            list.innerHTML = html;
         }
 
         function showMainPage() {
@@ -1003,15 +975,6 @@
             document.getElementById("adminTitle").value = headerTitle;
             document.getElementById("adminDesc").value = headerDesc;
             updatePreview();
-            
-            if (localStorage.getItem("firebaseKey")) {
-                document.getElementById("firebaseKey").value = localStorage.getItem("firebaseKey");
-                document.getElementById("firebaseProjectId").value = localStorage.getItem("firebaseProjectId");
-                document.getElementById("firebaseDatabaseUrl").value = localStorage.getItem("firebaseDatabaseUrl");
-                document.getElementById("setupBox").style.display = "none";
-            } else {
-                document.getElementById("setupBox").style.display = "block";
-            }
         }
 
         function updatePreview() {
@@ -1055,17 +1018,18 @@
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                backgroundImage = e.target.result;
+                tempBackgroundImage = e.target.result;
             };
             reader.readAsDataURL(file);
         }
 
         function saveBackground() {
-            if (!backgroundImage) {
+            if (!tempBackgroundImage) {
                 alert("Selecione uma imagem primeiro!");
                 return;
             }
 
+            backgroundImage = tempBackgroundImage;
             localStorage.setItem("backgroundImage", backgroundImage);
             applyBackground();
             alert("Fundo salvo com sucesso!");
@@ -1081,6 +1045,7 @@
         function resetBackground() {
             if (confirm("Tem certeza que deseja resetar o fundo para o padrão?")) {
                 backgroundImage = null;
+                tempBackgroundImage = null;
                 localStorage.removeItem("backgroundImage");
                 document.body.classList.remove("custom-bg");
                 document.body.style.removeProperty("--bg-image");
@@ -1089,38 +1054,37 @@
             }
         }
 
-        function saveFirebaseConfig() {
-            const key = document.getElementById("firebaseKey").value.trim();
-            const projectId = document.getElementById("firebaseProjectId").value.trim();
-            const databaseUrl = document.getElementById("firebaseDatabaseUrl").value.trim();
+        function downloadInscriptions() {
+            let csv = "Data,Hora,Tipo,Nome,Email,Telefone\n";
 
-            if (!key || !projectId || !databaseUrl) {
-                alert("Preencha todos os campos!");
+            for (let i = 0; i < 3; i++) {
+                inscriptions[i].forEach(insc => {
+                    const date = new Date(insc.timestamp);
+                    const dateStr = date.toLocaleDateString('pt-BR');
+                    const timeStr = date.toLocaleTimeString('pt-BR');
+                    
+                    csv += `"${dateStr}","${timeStr}","${courses[i].name}","${insc.fullName}","${insc.email}","${insc.phone || ''}"\n`;
+                });
+            }
+
+            const element = document.createElement("a");
+            element.setAttribute("href", "data:text/csv;charset=utf-8," + encodeURIComponent(csv));
+            element.setAttribute("download", "inscricoes_" + new Date().toISOString().split('T')[0] + ".csv");
+            element.style.display = "none";
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        }
+
+        function clearAllInscriptions() {
+            if (!confirm("Tem certeza que deseja apagar TODAS as inscrições? Essa ação não pode ser desfeita!")) {
                 return;
             }
 
-            localStorage.setItem("firebaseKey", key);
-            localStorage.setItem("firebaseProjectId", projectId);
-            localStorage.setItem("firebaseDatabaseUrl", databaseUrl);
-
-            initializeFirebase();
-            alert("Firebase conectado com sucesso!");
-            document.getElementById("setupBox").style.display = "none";
-        }
-
-        function clearAllData() {
-            if (!confirm("Tem certeza? Isso vai apagar todas as inscrições!")) return;
-
-            if (db) {
-                db.ref("inscriptions").remove().then(() => {
-                    inscriptions = { 0: [], 1: [], 2: [] };
-                    updateVacancyDisplay();
-                    alert("Todos os dados foram apagados!");
-                });
-            } else {
-                inscriptions = { 0: [], 1: [], 2: [] };
-                alert("Dados locais foram apagados!");
-            }
+            inscriptions = { 0: [], 1: [], 2: [] };
+            saveInscriptions();
+            updateVacancyDisplay();
+            alert("Todas as inscrições foram apagadas!");
         }
 
         function setupFormHandlers() {
@@ -1133,14 +1097,12 @@
             const form = document.getElementById("inscriptionForm");
             const successMsg = document.getElementById("successMsg");
             const errorMsg = document.getElementById("errorMsg");
-            const warningMsg = document.getElementById("warningMsg");
             const formInputs = document.querySelectorAll("[id^='formInputs']");
             const submitBtn = document.getElementById("submitBtn");
 
             courseSelect.addEventListener("change", function() {
                 successMsg.style.display = "none";
                 errorMsg.style.display = "none";
-                warningMsg.style.display = "none";
 
                 if (this.value === "") {
                     courseDetails.classList.remove("show");
@@ -1152,7 +1114,7 @@
                 
                 const idx = parseInt(this.value);
                 const course = courses[idx];
-                const count = inscriptions[idx] ? inscriptions[idx].length : 0;
+                const count = inscriptions[idx].length;
                 const isFull = count >= course.vagas && course.vagas !== Infinity;
 
                 courseDetailTitle.textContent = course.name;
@@ -1194,7 +1156,7 @@
                 
                 const courseIdx = parseInt(courseSelect.value);
                 const course = courses[courseIdx];
-                const count = inscriptions[courseIdx] ? inscriptions[courseIdx].length : 0;
+                const count = inscriptions[courseIdx].length;
 
                 if (count >= course.vagas && course.vagas !== Infinity) {
                     errorMsg.textContent = "As vagas se encerraram, vá para a próxima por favor";
@@ -1203,34 +1165,24 @@
                 }
 
                 const userData = {
-                    courseIndex: courseIdx,
-                    courseName: course.name,
                     fullName: document.getElementById("fullName").value,
                     email: document.getElementById("email").value,
                     phone: document.getElementById("phone").value,
                     timestamp: new Date().toISOString()
                 };
 
-                if (db) {
-                    db.ref("inscriptions").push(userData).then(() => {
-                        successMsg.textContent = `Parabéns ${userData.fullName}! Sua inscrição em "${course.name}" foi confirmada. Verifique seu email para mais informações.`;
-                        successMsg.style.display = "block";
-                        errorMsg.style.display = "none";
-                        form.reset();
-                        courseDetails.classList.remove("show");
-                        courseSelect.value = "";
-                        formInputs.forEach(el => el.style.display = "none");
-                        submitBtn.style.display = "none";
-                    }).catch(error => {
-                        errorMsg.textContent = "Erro ao enviar inscrição. Tente novamente.";
-                        errorMsg.style.display = "block";
-                    });
-                } else {
-                    warningMsg.textContent = "⚠️ Firebase não configurado. As inscrições não serão salvas. Configure no painel admin.";
-                    warningMsg.style.display = "block";
-                    successMsg.textContent = `Parabéns ${userData.fullName}! Sua inscrição em "${course.name}" foi confirmada (offline).`;
-                    successMsg.style.display = "block";
-                }
+                inscriptions[courseIdx].push(userData);
+                saveInscriptions();
+                updateVacancyDisplay();
+
+                successMsg.textContent = `Parabéns ${userData.fullName}! Sua inscrição em "${course.name}" foi confirmada. Verifique seu email para mais informações.`;
+                successMsg.style.display = "block";
+                errorMsg.style.display = "none";
+                form.reset();
+                courseDetails.classList.remove("show");
+                courseSelect.value = "";
+                formInputs.forEach(el => el.style.display = "none");
+                submitBtn.style.display = "none";
             });
         }
 
