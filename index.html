@@ -2,13 +2,21 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Inscrições - Casa das Yabás</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         body {
@@ -21,6 +29,7 @@
             justify-content: center;
             align-items: flex-start;
             padding-top: 40px;
+            overflow-x: hidden;
         }
 
         body.custom-bg {
@@ -72,6 +81,8 @@
             font-weight: 500;
             color: #333;
             margin-bottom: 6px;
+            -webkit-user-select: text;
+            user-select: text;
         }
 
         .form-group input[type="text"],
@@ -81,9 +92,11 @@
             padding: 10px 12px;
             border: 1px solid #ddd;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 16px;
             font-family: inherit;
             transition: border-color 0.2s;
+            -webkit-user-select: text;
+            user-select: text;
         }
 
         .form-group input[type="text"]:focus,
@@ -100,7 +113,7 @@
         }
 
         .form-container {
-            padding: 30px;
+            padding: 30px 20px;
         }
 
         .success-msg {
@@ -149,7 +162,7 @@
             padding: 12px;
             border: 1px solid #ddd;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 16px;
             font-family: inherit;
             transition: all 0.2s;
         }
@@ -280,6 +293,10 @@
             box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
         }
 
+        .submit-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
         .submit-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -319,7 +336,7 @@
         }
 
         .admin-content {
-            padding: 30px;
+            padding: 20px;
         }
 
         .admin-section {
@@ -348,7 +365,7 @@
 
         .admin-btn {
             flex: 1;
-            min-width: 150px;
+            min-width: 130px;
             padding: 12px 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -358,11 +375,17 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .admin-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .admin-btn:active {
+            transform: translateY(0);
         }
 
         .admin-btn.danger {
@@ -407,8 +430,10 @@
             padding: 10px 12px;
             border: 1px solid #ddd;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 16px;
             margin-bottom: 10px;
+            -webkit-user-select: text;
+            user-select: text;
         }
 
         .logout-link {
@@ -430,7 +455,7 @@
             background: white;
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 40px 30px;
+            padding: 40px 20px;
             text-align: center;
         }
 
@@ -452,8 +477,10 @@
             padding: 12px;
             border: 1px solid #ddd;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 16px;
             margin-bottom: 16px;
+            -webkit-user-select: text;
+            user-select: text;
         }
 
         .login-container input:focus {
@@ -478,6 +505,10 @@
         .login-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
         }
 
         .error-box {
@@ -515,6 +546,8 @@
             font-size: 14px;
             color: #667eea;
             font-weight: 500;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .file-input-label:hover {
@@ -545,6 +578,8 @@
             margin-bottom: 8px;
             border-left: 3px solid #667eea;
             font-size: 13px;
+            -webkit-user-select: text;
+            user-select: text;
         }
 
         .inscription-item:last-child {
@@ -577,23 +612,27 @@
             }
 
             .header-section {
-                padding: 30px 20px;
+                padding: 30px 15px;
             }
 
             .header-section h1 {
-                font-size: 24px;
+                font-size: 22px;
+            }
+
+            .header-section p {
+                font-size: 14px;
             }
 
             .form-container {
-                padding: 20px;
+                padding: 20px 15px;
             }
 
             .admin-content {
-                padding: 20px;
+                padding: 15px;
             }
 
             .login-container {
-                padding: 30px 20px;
+                padding: 30px 15px;
             }
 
             .admin-buttons {
@@ -603,6 +642,11 @@
             .admin-btn {
                 flex: unset;
                 width: 100%;
+            }
+
+            .admin-section {
+                padding-bottom: 20px;
+                margin-bottom: 20px;
             }
         }
     </style>
@@ -729,36 +773,29 @@
                 <!-- Ver Inscrições -->
                 <div class="admin-section">
                     <h2>📝 Inscrições Recebidas</h2>
+                    <p style="font-size: 13px; color: #666; margin-bottom: 16px;">Total de inscrições salvas localmente.</p>
                     <div id="inscriptionsList" class="inscriptions-list">
                         <p style="text-align: center; color: #999; padding: 20px;">Nenhuma inscrição ainda</p>
                     </div>
                     <div class="admin-buttons">
-                        <button class="admin-btn" onclick="downloadInscriptions()">📥 Baixar como CSV</button>
-                        <button class="admin-btn danger" onclick="clearAllInscriptions()">🗑️ Apagar Inscrições</button>
+                        <button class="admin-btn" onclick="downloadInscriptions()">📥 Baixar CSV</button>
+                        <button class="admin-btn danger" onclick="clearAllInscriptions()">🗑️ Apagar</button>
                     </div>
                 </div>
 
                 <!-- Personalizar Fundo -->
                 <div class="admin-section">
                     <h2>🎨 Personalizar Fundo</h2>
-                    <p style="font-size: 14px; color: #666; margin-bottom: 16px;">Envie uma imagem para usar como fundo com transparência. A imagem terá azul claro no topo e embaixo.</p>
+                    <p style="font-size: 14px; color: #666; margin-bottom: 16px;">Envie a imagem de fundo com transparência.</p>
                     <div class="file-input-wrapper">
                         <input type="file" id="backgroundFile" accept="image/*" onchange="previewBackground(event)">
                         <label class="file-input-label" for="backgroundFile">
-                            📁 Clique para selecionar uma imagem ou arraste aqui
+                            📁 Clique para selecionar imagem
                         </label>
                     </div>
-                    <div style="margin-top: 16px; padding: 16px; background: #f8f9fa; border-radius: 8px;">
-                        <p style="font-size: 12px; color: #666; margin-bottom: 8px;"><strong>Dica:</strong></p>
-                        <ul style="font-size: 13px; color: #666; margin-left: 20px;">
-                            <li>Tamanho recomendado: até 5MB</li>
-                            <li>Formato: JPG, PNG, WebP</li>
-                            <li>Resolução: 1920x1080px ou maior</li>
-                        </ul>
-                    </div>
-                    <div class="admin-buttons">
-                        <button class="admin-btn" onclick="saveBackground()">💾 Salvar Fundo</button>
-                        <button class="admin-btn danger" onclick="resetBackground()">🔄 Resetar Padrão</button>
+                    <div class="admin-buttons" style="margin-top: 12px;">
+                        <button class="admin-btn" onclick="saveBackground()">💾 Salvar</button>
+                        <button class="admin-btn danger" onclick="resetBackground()">🔄 Resetar</button>
                     </div>
                 </div>
 
@@ -771,7 +808,7 @@
                     </div>
                     <div class="form-group">
                         <label>Descrição:</label>
-                        <textarea id="adminDesc" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 14px; min-height: 80px;"></textarea>
+                        <textarea id="adminDesc" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 16px; min-height: 80px;"></textarea>
                     </div>
                     <div class="preview-box">
                         <div style="font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;" id="previewTitle"></div>
@@ -803,6 +840,28 @@
         let backgroundImage = null;
         let tempBackgroundImage = null;
 
+        // Sincronizar dados entre abas
+        window.addEventListener('storage', function(e) {
+            if (e.key && e.key.startsWith('inscriptions_')) {
+                loadInscriptions();
+                updateVacancyDisplay();
+            }
+            if (e.key === 'headerTitle') {
+                headerTitle = e.newValue;
+                updateMainPageText();
+                document.getElementById("adminTitle").value = headerTitle;
+            }
+            if (e.key === 'headerDesc') {
+                headerDesc = e.newValue;
+                updateMainPageText();
+                document.getElementById("adminDesc").value = headerDesc;
+            }
+            if (e.key === 'backgroundImage') {
+                backgroundImage = e.newValue;
+                applyBackground();
+            }
+        });
+
         // Inicializar
         function initPage() {
             const path = window.location.pathname;
@@ -814,6 +873,14 @@
             } else {
                 showMainPage();
             }
+
+            // Recarregar dados a cada 2 segundos
+            setInterval(function() {
+                if (!adminLoggedIn) {
+                    loadInscriptions();
+                    updateVacancyDisplay();
+                }
+            }, 2000);
         }
 
         function loadLocalData() {
@@ -831,7 +898,6 @@
                 applyBackground();
             }
             
-            // Carregar inscrições
             loadInscriptions();
         }
 
@@ -883,7 +949,6 @@
                 }
             }
 
-            // Atualizar lista de inscrições
             updateInscriptionsList();
         }
 
@@ -905,7 +970,6 @@
                 return;
             }
 
-            // Ordenar por data (mais recentes primeiro)
             allInscriptions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
             let html = '';
@@ -1043,7 +1107,7 @@
         }
 
         function resetBackground() {
-            if (confirm("Tem certeza que deseja resetar o fundo para o padrão?")) {
+            if (confirm("Resetar fundo para o padrão?")) {
                 backgroundImage = null;
                 tempBackgroundImage = null;
                 localStorage.removeItem("backgroundImage");
@@ -1077,14 +1141,14 @@
         }
 
         function clearAllInscriptions() {
-            if (!confirm("Tem certeza que deseja apagar TODAS as inscrições? Essa ação não pode ser desfeita!")) {
+            if (!confirm("Apagar TODAS as inscrições? Não pode desfazer!")) {
                 return;
             }
 
             inscriptions = { 0: [], 1: [], 2: [] };
             saveInscriptions();
             updateVacancyDisplay();
-            alert("Todas as inscrições foram apagadas!");
+            alert("Inscrições apagadas!");
         }
 
         function setupFormHandlers() {
@@ -1112,6 +1176,7 @@
                     return;
                 }
                 
+                loadInscriptions();
                 const idx = parseInt(this.value);
                 const course = courses[idx];
                 const count = inscriptions[idx].length;
@@ -1154,6 +1219,7 @@
             form.addEventListener("submit", function(e) {
                 e.preventDefault();
                 
+                loadInscriptions();
                 const courseIdx = parseInt(courseSelect.value);
                 const course = courses[courseIdx];
                 const count = inscriptions[courseIdx].length;
