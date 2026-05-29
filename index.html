@@ -62,6 +62,7 @@
             font-size: 28px;
             font-weight: 600;
             margin-bottom: 12px;
+            word-break: break-word;
         }
 
         .header-section p {
@@ -69,6 +70,7 @@
             opacity: 0.95;
             line-height: 1.6;
             margin-bottom: 20px;
+            word-break: break-word;
         }
 
         .form-group {
@@ -138,6 +140,35 @@
             display: none;
         }
 
+        .sync-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 12px;
+            background: #27ae60;
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .sync-indicator.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(200px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
         .form-input-group {
             margin-bottom: 18px;
         }
@@ -205,6 +236,7 @@
             font-weight: 600;
             color: #333;
             margin-bottom: 6px;
+            word-break: break-word;
         }
 
         .course-details.closed .course-title {
@@ -215,6 +247,7 @@
             font-size: 14px;
             color: #666;
             margin-bottom: 12px;
+            word-break: break-word;
         }
 
         .course-details.closed .course-desc {
@@ -390,6 +423,10 @@
 
         .admin-btn.danger {
             background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .admin-btn.sync {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
         }
 
         .vacancy-stat {
@@ -580,6 +617,7 @@
             font-size: 13px;
             -webkit-user-select: text;
             user-select: text;
+            word-break: break-word;
         }
 
         .inscription-item:last-child {
@@ -648,10 +686,18 @@
                 padding-bottom: 20px;
                 margin-bottom: 20px;
             }
+
+            .sync-indicator {
+                top: 10px;
+                right: 10px;
+                font-size: 11px;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="sync-indicator" id="syncIndicator">✓ Sincronizado</div>
+
     <!-- Página Principal -->
     <div id="mainPage" class="hidden">
         <div class="container">
@@ -816,6 +862,7 @@
                     </div>
                     <div class="admin-buttons">
                         <button class="admin-btn" onclick="saveTextChanges()">💾 Salvar Texto</button>
+                        <button class="admin-btn sync" onclick="forceSync()">🔄 Sincronizar</button>
                     </div>
                 </div>
 
@@ -839,31 +886,81 @@
         let headerDesc = "Escolha uma das modalidades abaixo e preencha seus dados para se inscrever";
         let backgroundImage = null;
         let tempBackgroundImage = null;
+        let db = null;
 
-        // Sincronizar dados entre abas
-        window.addEventListener('storage', function(e) {
-            if (e.key && e.key.startsWith('inscriptions_')) {
-                loadInscriptions();
-                updateVacancyDisplay();
+        // Inicializar IndexedDB
+        async function initIndexedDB() {
+            return new Promise((resolve) => {
+                const request = indexedDB.open('InscriptionsDB', 1);
+                
+                request.onerror = () => {
+                    console.log('IndexedDB falhou, usando localStorage');
+                    resolve(null);
+                };
+                
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+                
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('data')) {
+                        db.createObjectStore('data');
+                    }
+                };
+            });
+        }
+
+        // Salvar no IndexedDB/localStorage
+        async function saveData(key, value) {
+            if (db) {
+                return new Promise((resolve) => {
+                    const tx = db.transaction('data', 'readwrite');
+                    tx.objectStore('data').put(value, key);
+                    tx.oncomplete = () => resolve();
+                });
+            } else {
+                localStorage.setItem(key, JSON.stringify(value));
             }
-            if (e.key === 'headerTitle') {
-                headerTitle = e.newValue;
-                updateMainPageText();
-                document.getElementById("adminTitle").value = headerTitle;
+        }
+
+        // Carregar do IndexedDB/localStorage
+        async function loadData(key) {
+            if (db) {
+                return new Promise((resolve) => {
+                    const tx = db.transaction('data', 'readonly');
+                    const request = tx.objectStore('data').get(key);
+                    request.onsuccess = () => resolve(request.result);
+                });
+            } else {
+                const data = localStorage.getItem(key);
+                return data ? JSON.parse(data) : null;
             }
-            if (e.key === 'headerDesc') {
-                headerDesc = e.newValue;
-                updateMainPageText();
-                document.getElementById("adminDesc").value = headerDesc;
-            }
-            if (e.key === 'backgroundImage') {
-                backgroundImage = e.newValue;
-                applyBackground();
-            }
-        });
+        }
+
+        // Mostrar indicador de sincronização
+        function showSyncIndicator() {
+            const indicator = document.getElementById('syncIndicator');
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+        }
+
+        // Forçar sincronização
+        function forceSync() {
+            loadLocalData();
+            updateMainPageText();
+            applyBackground();
+            showSyncIndicator();
+            alert('Sincronizado com sucesso!');
+        }
 
         // Inicializar
-        function initPage() {
+        async function initPage() {
+            await initIndexedDB();
+            
             const path = window.location.pathname;
             
             loadLocalData();
@@ -874,51 +971,46 @@
                 showMainPage();
             }
 
-            // Recarregar dados a cada 2 segundos
-            setInterval(function() {
+            // Recarregar dados a cada 3 segundos
+            setInterval(() => {
                 if (!adminLoggedIn) {
                     loadInscriptions();
                     updateVacancyDisplay();
                 }
-            }, 2000);
+            }, 3000);
         }
 
-        function loadLocalData() {
-            if (localStorage.getItem("headerTitle")) {
-                headerTitle = localStorage.getItem("headerTitle");
-            }
-            if (localStorage.getItem("headerDesc")) {
-                headerDesc = localStorage.getItem("headerDesc");
-            }
-            if (localStorage.getItem("adminLoggedIn") === "true") {
-                adminLoggedIn = true;
-            }
-            if (localStorage.getItem("backgroundImage")) {
-                backgroundImage = localStorage.getItem("backgroundImage");
+        async function loadLocalData() {
+            const title = await loadData('headerTitle');
+            const desc = await loadData('headerDesc');
+            const loggedIn = await loadData('adminLoggedIn');
+            const bg = await loadData('backgroundImage');
+
+            if (title) headerTitle = title;
+            if (desc) headerDesc = desc;
+            if (loggedIn) adminLoggedIn = loggedIn;
+            if (bg) {
+                backgroundImage = bg;
                 applyBackground();
             }
             
             loadInscriptions();
         }
 
-        function loadInscriptions() {
+        async function loadInscriptions() {
             inscriptions = { 0: [], 1: [], 2: [] };
             
             for (let i = 0; i < 3; i++) {
-                const data = localStorage.getItem(`inscriptions_${i}`);
+                const data = await loadData(`inscriptions_${i}`);
                 if (data) {
-                    try {
-                        inscriptions[i] = JSON.parse(data);
-                    } catch (e) {
-                        inscriptions[i] = [];
-                    }
+                    inscriptions[i] = data;
                 }
             }
         }
 
-        function saveInscriptions() {
+        async function saveInscriptions() {
             for (let i = 0; i < 3; i++) {
-                localStorage.setItem(`inscriptions_${i}`, JSON.stringify(inscriptions[i]));
+                await saveData(`inscriptions_${i}`, inscriptions[i]);
             }
         }
 
@@ -928,8 +1020,10 @@
                 const max = courses[i].vagas;
                 const percentage = (count / max) * 100;
 
-                document.getElementById(`count${i}`).textContent = 
-                    i === 2 ? "Aberto" : `${count} / ${max}`;
+                const countEl = document.getElementById(`count${i}`);
+                if (countEl) {
+                    countEl.textContent = i === 2 ? "Aberto" : `${count} / ${max}`;
+                }
                 
                 const bar = document.getElementById(`bar${i}`);
                 if (bar) {
@@ -1018,7 +1112,7 @@
 
             if (password === ADMIN_PASSWORD) {
                 adminLoggedIn = true;
-                localStorage.setItem("adminLoggedIn", "true");
+                saveData('adminLoggedIn', true);
                 document.getElementById("adminPassword").value = "";
                 errorBox.style.display = "none";
                 showAdminPage();
@@ -1030,12 +1124,12 @@
 
         function logout() {
             adminLoggedIn = false;
-            localStorage.removeItem("adminLoggedIn");
+            saveData('adminLoggedIn', false);
             window.location.hash = "";
             showMainPage();
         }
 
-        function loadAdminData() {
+        async function loadAdminData() {
             document.getElementById("adminTitle").value = headerTitle;
             document.getElementById("adminDesc").value = headerDesc;
             updatePreview();
@@ -1046,7 +1140,7 @@
             document.getElementById("previewDesc").textContent = document.getElementById("adminDesc").value || "Sua descrição aqui";
         }
 
-        function saveTextChanges() {
+        async function saveTextChanges() {
             const title = document.getElementById("adminTitle").value.trim();
             const desc = document.getElementById("adminDesc").value.trim();
 
@@ -1058,10 +1152,11 @@
             headerTitle = title;
             headerDesc = desc;
 
-            localStorage.setItem("headerTitle", headerTitle);
-            localStorage.setItem("headerDesc", headerDesc);
+            await saveData('headerTitle', headerTitle);
+            await saveData('headerDesc', headerDesc);
 
             updateMainPageText();
+            showSyncIndicator();
             alert("Texto salvo com sucesso!");
             updatePreview();
         }
@@ -1087,15 +1182,16 @@
             reader.readAsDataURL(file);
         }
 
-        function saveBackground() {
+        async function saveBackground() {
             if (!tempBackgroundImage) {
                 alert("Selecione uma imagem primeiro!");
                 return;
             }
 
             backgroundImage = tempBackgroundImage;
-            localStorage.setItem("backgroundImage", backgroundImage);
+            await saveData('backgroundImage', backgroundImage);
             applyBackground();
+            showSyncIndicator();
             alert("Fundo salvo com sucesso!");
         }
 
@@ -1106,14 +1202,15 @@
             }
         }
 
-        function resetBackground() {
+        async function resetBackground() {
             if (confirm("Resetar fundo para o padrão?")) {
                 backgroundImage = null;
                 tempBackgroundImage = null;
-                localStorage.removeItem("backgroundImage");
+                await saveData('backgroundImage', null);
                 document.body.classList.remove("custom-bg");
                 document.body.style.removeProperty("--bg-image");
                 document.getElementById("backgroundFile").value = "";
+                showSyncIndicator();
                 alert("Fundo resetado!");
             }
         }
@@ -1148,6 +1245,7 @@
             inscriptions = { 0: [], 1: [], 2: [] };
             saveInscriptions();
             updateVacancyDisplay();
+            showSyncIndicator();
             alert("Inscrições apagadas!");
         }
 
@@ -1164,7 +1262,7 @@
             const formInputs = document.querySelectorAll("[id^='formInputs']");
             const submitBtn = document.getElementById("submitBtn");
 
-            courseSelect.addEventListener("change", function() {
+            courseSelect.addEventListener("change", async function() {
                 successMsg.style.display = "none";
                 errorMsg.style.display = "none";
 
@@ -1176,7 +1274,7 @@
                     return;
                 }
                 
-                loadInscriptions();
+                await loadInscriptions();
                 const idx = parseInt(this.value);
                 const course = courses[idx];
                 const count = inscriptions[idx].length;
@@ -1216,10 +1314,10 @@
                 courseDetails.classList.add("show");
             });
 
-            form.addEventListener("submit", function(e) {
+            form.addEventListener("submit", async function(e) {
                 e.preventDefault();
                 
-                loadInscriptions();
+                await loadInscriptions();
                 const courseIdx = parseInt(courseSelect.value);
                 const course = courses[courseIdx];
                 const count = inscriptions[courseIdx].length;
@@ -1238,7 +1336,7 @@
                 };
 
                 inscriptions[courseIdx].push(userData);
-                saveInscriptions();
+                await saveInscriptions();
                 updateVacancyDisplay();
 
                 successMsg.textContent = `Parabéns ${userData.fullName}! Sua inscrição em "${course.name}" foi confirmada. Verifique seu email para mais informações.`;
@@ -1249,6 +1347,7 @@
                 courseSelect.value = "";
                 formInputs.forEach(el => el.style.display = "none");
                 submitBtn.style.display = "none";
+                showSyncIndicator();
             });
         }
 
