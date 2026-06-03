@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Inscrições - Casa das Yabás</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html, body { height: 100%; width: 100%; -webkit-user-select: none; user-select: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
             background: linear-gradient(180deg, #e3f2fd 0%, #f5f5f5 30%, #f5f5f5 70%, #e3f2fd 100%);
@@ -18,88 +16,319 @@
             justify-content: center;
             align-items: flex-start;
             padding-top: 40px;
-            overflow-x: hidden;
         }
-        body.custom-bg {
-            background: linear-gradient(180deg, rgba(227, 242, 253, 0.85) 0%, rgba(245, 245, 245, 0.9) 30%, rgba(245, 245, 245, 0.9) 70%, rgba(227, 242, 253, 0.85) 100%), var(--bg-image);
-            background-position: center;
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
         }
-        .container { width: 100%; max-width: 700px; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden; }
-        .header-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 30px; text-align: center; }
-        .header-section h1 { font-size: 28px; font-weight: 600; margin-bottom: 12px; word-break: break-word; }
-        .header-section p { font-size: 16px; opacity: 0.95; line-height: 1.6; margin-bottom: 20px; word-break: break-word; }
-        .form-container { padding: 30px 20px; }
-        .success-msg { background: #d4edda; color: #155724; padding: 14px 16px; border-radius: 6px; margin-bottom: 20px; font-size: 14px; border: 1px solid #c3e6cb; display: none; }
-        .error-msg { background: #f8d7da; color: #721c24; padding: 14px 16px; border-radius: 6px; margin-bottom: 20px; font-size: 14px; border: 1px solid #f5c6cb; display: none; }
-        .info-msg { background: #d1ecf1; color: #0c5460; padding: 14px 16px; border-radius: 6px; margin-bottom: 20px; font-size: 14px; border: 1px solid #bee5eb; display: none; }
-        .form-input-group { margin-bottom: 18px; }
-        .form-input-group label { display: block; font-size: 14px; font-weight: 500; color: #333; margin-bottom: 8px; }
-        .form-input-group label span { color: #e74c3c; }
-        .form-input-group select, .form-input-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; font-family: inherit; transition: all 0.2s; }
-        .form-input-group select:focus, .form-input-group input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
-        .course-details { background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 20px; display: none; border-left: 4px solid #667eea; }
-        .course-details.show { display: block; }
-        .course-details.closed { background: #f8d7da; border-left-color: #e74c3c; }
-        .course-title { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 6px; word-break: break-word; }
-        .course-details.closed .course-title { color: #721c24; }
-        .course-desc { font-size: 14px; color: #666; margin-bottom: 12px; word-break: break-word; }
-        .course-details.closed .course-desc { color: #721c24; }
-        .vacancy-bar { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
-        .bar { flex: 1; height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; }
-        .bar-fill { height: 100%; background: #667eea; border-radius: 4px; transition: width 0.3s; }
-        .bar-full { background: #e74c3c; }
-        .vacancy-text { font-size: 13px; color: #666; min-width: 100px; text-align: right; }
-        .vacancy-open { font-size: 13px; color: #27ae60; font-weight: 600; }
-        .vacancy-closed { font-size: 13px; color: #e74c3c; font-weight: 600; }
-        .submit-btn { width: 100%; padding: 14px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 10px; }
-        .submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3); }
-        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; background: #999; }
-        .footer-text { font-size: 12px; color: #999; text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; }
-        .admin-container { width: 100%; max-width: 800px; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden; }
-        .admin-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
-        .admin-header h1 { font-size: 28px; font-weight: 600; margin-bottom: 10px; }
-        .admin-content { padding: 20px; }
-        .admin-section { margin-bottom: 30px; padding-bottom: 30px; border-bottom: 1px solid #eee; }
-        .admin-section:last-child { border-bottom: none; }
-        .admin-section h2 { font-size: 18px; font-weight: 600; color: #333; margin-bottom: 16px; }
-        .admin-buttons { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
-        .admin-btn { flex: 1; min-width: 130px; padding: 12px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-        .admin-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3); }
-        .admin-btn.danger { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
-        .vacancy-stat { background: #f8f9fa; padding: 16px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid #667eea; }
-        .vacancy-stat h3 { font-size: 14px; color: #333; margin-bottom: 8px; }
-        .vacancy-stat-bar { display: flex; align-items: center; gap: 12px; }
-        .vacancy-stat-bar .bar { flex: 1; height: 8px; }
-        .vacancy-stat-count { font-size: 13px; color: #666; min-width: 80px; text-align: right; font-weight: 600; }
-        .stat-input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; margin-bottom: 10px; }
-        .login-container { width: 100%; max-width: 400px; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); padding: 40px 20px; text-align: center; }
-        .login-container h1 { font-size: 24px; font-weight: 600; color: #333; margin-bottom: 10px; }
-        .login-container p { font-size: 14px; color: #666; margin-bottom: 30px; }
-        .login-container input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; margin-bottom: 16px; }
-        .login-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; }
-        .error-box { background: #f8d7da; color: #721c24; padding: 12px; border-radius: 6px; margin-bottom: 16px; border: 1px solid #f5c6cb; display: none; font-size: 13px; }
-        .inscriptions-list { background: #f8f9fa; padding: 16px; border-radius: 8px; max-height: 300px; overflow-y: auto; }
-        .inscription-item { background: white; padding: 12px; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid #667eea; font-size: 13px; word-break: break-word; }
-        .inscription-name { font-weight: 600; color: #333; }
-        .inscription-email { color: #666; font-size: 12px; }
-        .inscription-date { color: #999; font-size: 11px; }
-        .hidden { display: none !important; }
-        .preview-box { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 16px; border-left: 4px solid #667eea; }
-        .file-input-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; }
-        .file-input-wrapper input[type=file] { position: absolute; left: -9999px; }
-        .file-input-label { display: block; padding: 12px; background: #f8f9fa; border: 2px dashed #667eea; border-radius: 6px; text-align: center; cursor: pointer; font-size: 14px; color: #667eea; font-weight: 500; }
-        .file-input-label:hover { background: #667eea; color: white; }
-        .logout-link { display: inline-block; margin-top: 20px; color: #667eea; text-decoration: none; font-size: 14px; font-weight: 500; }
-        .logout-link:hover { text-decoration: underline; }
+        .header-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .header-section h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .header-section p {
+            font-size: 16px;
+            opacity: 0.95;
+            line-height: 1.6;
+        }
+        .form-container {
+            padding: 30px 20px;
+        }
+        .success-msg {
+            background: #d4edda;
+            color: #155724;
+            padding: 14px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            border: 1px solid #c3e6cb;
+            display: none;
+        }
+        .form-input-group {
+            margin-bottom: 18px;
+        }
+        .form-input-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .form-input-group label span {
+            color: #e74c3c;
+        }
+        .form-input-group select,
+        .form-input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+        .form-input-group select:focus,
+        .form-input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .course-details {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            border-left: 4px solid #667eea;
+        }
+        .course-details.show {
+            display: block;
+        }
+        .course-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+        }
+        .course-desc {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+        .vacancy-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .bar {
+            flex: 1;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            background: #667eea;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        .vacancy-text {
+            font-size: 13px;
+            color: #666;
+            min-width: 100px;
+            text-align: right;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+        }
+        .footer-text {
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .admin-link {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .admin-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .admin-link a:hover {
+            text-decoration: underline;
+        }
+        .admin-container {
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .admin-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .admin-header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .admin-content {
+            padding: 20px;
+        }
+        .admin-section {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
+        .admin-section:last-child {
+            border-bottom: none;
+        }
+        .admin-section h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+        }
+        .admin-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        .admin-btn {
+            flex: 1;
+            min-width: 130px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .admin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+        }
+        .admin-btn.danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+        .inscriptions-list {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .inscription-item {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 3px solid #667eea;
+            font-size: 13px;
+        }
+        .inscription-name {
+            font-weight: 600;
+            color: #333;
+        }
+        .inscription-email {
+            color: #666;
+            font-size: 12px;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .login-container h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .login-container input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .error-box {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            border: 1px solid #f5c6cb;
+            display: none;
+            font-size: 13px;
+        }
+        .logout-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .logout-link:hover {
+            text-decoration: underline;
+        }
         @media (max-width: 600px) {
-            body { padding: 10px; padding-top: 20px; }
-            .header-section { padding: 30px 15px; }
-            .header-section h1 { font-size: 22px; }
-            .admin-buttons { flex-direction: column; }
-            .admin-btn { flex: unset; width: 100%; }
+            body {
+                padding: 10px;
+                padding-top: 20px;
+            }
+            .header-section {
+                padding: 30px 15px;
+            }
+            .header-section h1 {
+                font-size: 22px;
+            }
+            .admin-buttons {
+                flex-direction: column;
+            }
+            .admin-btn {
+                flex: unset;
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -113,9 +342,7 @@
             </div>
 
             <div class="form-container">
-                <div id="infoMsg" class="info-msg"></div>
                 <div id="successMsg" class="success-msg"></div>
-                <div id="errorMsg" class="error-msg"></div>
 
                 <form id="inscriptionForm">
                     <div class="form-input-group">
@@ -161,6 +388,10 @@
                 <div class="footer-text">
                     Seus dados estão seguros e nunca serão compartilhados
                 </div>
+
+                <div class="admin-link">
+                    <a href="#" onclick="goToAdmin(); return false;">🔐 Painel Administrativo</a>
+                </div>
             </div>
         </div>
     </div>
@@ -173,6 +404,7 @@
             <div class="error-box" id="loginError"></div>
             <input type="password" id="adminPassword" placeholder="Senha" onkeypress="if(event.key==='Enter') loginAdmin()">
             <button class="login-btn" onclick="loginAdmin()">Entrar</button>
+            <p style="margin-top: 20px; font-size: 12px; color: #999;">Senha padrão: <strong>admin123</strong></p>
         </div>
     </div>
 
@@ -185,36 +417,19 @@
             </div>
 
             <div class="admin-content">
-                <div id="adminInfo" class="info-msg" style="display: block;"></div>
-
-                <!-- Gerenciar Vagas -->
+                <!-- Editar Texto -->
                 <div class="admin-section">
-                    <h2>📊 Gerenciar Vagas</h2>
-                    <div class="vacancy-stat">
-                        <h3>Consulta (Máximo: 24)</h3>
-                        <div class="vacancy-stat-bar">
-                            <div class="bar"><div class="bar-fill" id="bar0"></div></div>
-                            <span class="vacancy-stat-count" id="count0">0 / 24</span>
-                        </div>
-                        <p style="font-size: 12px; color: #666; margin-top: 8px;" id="status0"></p>
+                    <h2>✏️ Editar Texto</h2>
+                    <div class="form-input-group">
+                        <label>Título principal:</label>
+                        <input type="text" id="adminTitle" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px;">
                     </div>
-
-                    <div class="vacancy-stat">
-                        <h3>Axé Individual (Máximo: 8)</h3>
-                        <div class="vacancy-stat-bar">
-                            <div class="bar"><div class="bar-fill" id="bar1"></div></div>
-                            <span class="vacancy-stat-count" id="count1">0 / 8</span>
-                        </div>
-                        <p style="font-size: 12px; color: #666; margin-top: 8px;" id="status1"></p>
+                    <div class="form-input-group">
+                        <label>Descrição:</label>
+                        <textarea id="adminDesc" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 16px; min-height: 80px;"></textarea>
                     </div>
-
-                    <div class="vacancy-stat">
-                        <h3>Axé Coletivo (Ilimitado)</h3>
-                        <div class="vacancy-stat-bar">
-                            <div class="bar"><div class="bar-fill" id="bar2" style="width: 0%"></div></div>
-                            <span class="vacancy-stat-count" id="count2">Aberto</span>
-                        </div>
-                        <p style="font-size: 12px; color: #27ae60; margin-top: 8px;">✓ Sempre disponível</p>
+                    <div class="admin-buttons">
+                        <button class="admin-btn" onclick="saveTextChanges()">💾 Salvar Texto</button>
                     </div>
                 </div>
 
@@ -226,217 +441,61 @@
                     </div>
                     <div class="admin-buttons">
                         <button class="admin-btn" onclick="downloadInscriptions()">📥 Baixar CSV</button>
-                        <button class="admin-btn danger" onclick="clearAllInscriptions()">🗑️ Apagar</button>
-                    </div>
-                </div>
-
-                <!-- Personalizar Fundo -->
-                <div class="admin-section">
-                    <h2>🎨 Personalizar Fundo</h2>
-                    <p style="font-size: 14px; color: #666; margin-bottom: 16px;">Envie a imagem de fundo com transparência.</p>
-                    <div class="file-input-wrapper">
-                        <input type="file" id="backgroundFile" accept="image/*" onchange="previewBackground(event)">
-                        <label class="file-input-label" for="backgroundFile">
-                            📁 Clique para selecionar imagem
-                        </label>
-                    </div>
-                    <div class="admin-buttons" style="margin-top: 12px;">
-                        <button class="admin-btn" onclick="saveBackground()">💾 Salvar</button>
-                        <button class="admin-btn danger" onclick="resetBackground()">🔄 Resetar</button>
-                    </div>
-                </div>
-
-                <!-- Editar Texto -->
-                <div class="admin-section">
-                    <h2>✏️ Editar Texto</h2>
-                    <div class="form-input-group">
-                        <label>Título principal:</label>
-                        <input type="text" id="adminTitle" class="stat-input">
-                    </div>
-                    <div class="form-input-group">
-                        <label>Descrição:</label>
-                        <textarea id="adminDesc" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 16px; min-height: 80px;"></textarea>
-                    </div>
-                    <div class="preview-box">
-                        <div style="font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px;" id="previewTitle"></div>
-                        <div style="font-size: 14px; color: #666;" id="previewDesc"></div>
-                    </div>
-                    <div class="admin-buttons">
-                        <button class="admin-btn" onclick="saveTextChanges()">💾 Salvar Texto</button>
+                        <button class="admin-btn danger" onclick="clearAllInscriptions()">🗑️ Apagar Tudo</button>
                     </div>
                 </div>
 
                 <!-- Logout -->
-                <a href="#" onclick="logout()" class="logout-link">← Sair do Painel</a>
+                <a href="#" onclick="logout(); return false;" class="logout-link">← Sair do Painel</a>
             </div>
         </div>
     </div>
 
     <script>
         const ADMIN_PASSWORD = "admin123";
-        const SUPABASE_URL = "https://xbwqlcczptvwzueraezp.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_2DTgvr4H5RhRjr5zGCpLGQ_7x8-c4Nj";
-
         const courses = [
             { name: "Consulta", desc: "Serviço de consulta personalizada.", vagas: 24 },
             { name: "Axé Individual", desc: "Sessão individual de axé para você.", vagas: 8 },
             { name: "Axé Coletivo", desc: "Reunião coletiva de axé aberta a todos.", vagas: Infinity }
         ];
 
-        let supabase = null;
-        let useSupabase = false;
         let adminLoggedIn = false;
         let inscriptions = { 0: [], 1: [], 2: [] };
         let headerTitle = "Inscreva-se nos nossos serviços";
         let headerDesc = "Escolha uma das modalidades abaixo e preencha seus dados para se inscrever";
-        let backgroundImage = null;
-        let tempBackgroundImage = null;
 
-        async function initSupabase() {
-            try {
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                const { data } = await supabase.from('settings').select('*').limit(1);
-                useSupabase = true;
-                console.log('✅ Supabase OK');
-                supabase.channel('changes').on('postgres_changes', { event: '*', schema: 'public' }, () => loadData()).subscribe();
-                return true;
-            } catch (error) {
-                console.log('⚠️ Usando localStorage:', error.message);
-                useSupabase = false;
-                return false;
-            }
-        }
+        function loadData() {
+            const title = localStorage.getItem('headerTitle');
+            const desc = localStorage.getItem('headerDesc');
+            
+            if (title) headerTitle = title;
+            if (desc) headerDesc = desc;
 
-        async function loadData() {
-            if (useSupabase) {
-                try {
-                    const { data } = await supabase.from('settings').select('*').eq('id', 1).single();
-                    if (data) {
-                        headerTitle = data.header_title || headerTitle;
-                        headerDesc = data.header_desc || headerDesc;
-                        if (data.background_image) {
-                            backgroundImage = data.background_image;
-                            applyBackground();
-                        }
-                    }
-
-                    const { data: inscData } = await supabase.from('inscriptions').select('*').order('timestamp', { ascending: false });
-                    inscriptions = { 0: [], 1: [], 2: [] };
-                    if (inscData) {
-                        inscData.forEach(insc => {
-                            if (inscriptions[insc.course_index]) {
-                                inscriptions[insc.course_index].push(insc);
-                            }
-                        });
-                    }
-                } catch (error) {
-                    console.log('Erro ao carregar:', error);
-                }
-            } else {
-                const title = localStorage.getItem('headerTitle');
-                const desc = localStorage.getItem('headerDesc');
-                const bg = localStorage.getItem('backgroundImage');
-                
-                if (title) headerTitle = title;
-                if (desc) headerDesc = desc;
-                if (bg) {
-                    backgroundImage = bg;
-                    applyBackground();
-                }
-
-                inscriptions = { 0: [], 1: [], 2: [] };
-                for (let i = 0; i < 3; i++) {
-                    const data = localStorage.getItem(`inscriptions_${i}`);
-                    if (data) {
-                        try {
-                            inscriptions[i] = JSON.parse(data);
-                        } catch (e) {}
-                    }
-                }
-            }
-
-            updateMainPageText();
-            updateVacancyDisplay();
-        }
-
-        async function saveData() {
-            if (useSupabase) {
-                try {
-                    await supabase.from('settings').upsert({
-                        id: 1,
-                        header_title: headerTitle,
-                        header_desc: headerDesc,
-                        background_image: backgroundImage
-                    }).eq('id', 1);
-                } catch (error) {
-                    console.log('Erro Supabase:', error);
-                }
-            } else {
-                localStorage.setItem('headerTitle', headerTitle);
-                localStorage.setItem('headerDesc', headerDesc);
-                if (backgroundImage) {
-                    localStorage.setItem('backgroundImage', backgroundImage);
-                }
-
-                for (let i = 0; i < 3; i++) {
-                    localStorage.setItem(`inscriptions_${i}`, JSON.stringify(inscriptions[i]));
-                }
-            }
-        }
-
-        async function saveInscription(courseIdx, userData) {
-            if (useSupabase) {
-                try {
-                    await supabase.from('inscriptions').insert([{
-                        course_index: courseIdx,
-                        course_name: courses[courseIdx].name,
-                        full_name: userData.fullName,
-                        email: userData.email,
-                        phone: userData.phone
-                    }]);
-                    return true;
-                } catch (error) {
-                    console.log('Erro:', error);
-                    return false;
-                }
-            } else {
-                inscriptions[courseIdx].push({
-                    ...userData,
-                    timestamp: new Date().toISOString(),
-                    course_name: courses[courseIdx].name
-                });
-                saveData();
-                return true;
-            }
-        }
-
-        function updateVacancyDisplay() {
+            inscriptions = { 0: [], 1: [], 2: [] };
             for (let i = 0; i < 3; i++) {
-                const count = inscriptions[i].length;
-                const max = courses[i].vagas;
-                const percentage = (count / max) * 100;
-
-                const countEl = document.getElementById(`count${i}`);
-                if (countEl) countEl.textContent = i === 2 ? "Aberto" : `${count} / ${max}`;
-                
-                const bar = document.getElementById(`bar${i}`);
-                if (bar) {
-                    bar.style.width = i === 2 ? "0%" : Math.min(percentage, 100) + "%";
-                    bar.className = percentage >= 100 ? "bar-fill bar-full" : "bar-fill";
-                }
-
-                const status = document.getElementById(`status${i}`);
-                if (status && i !== 2) {
-                    if (count >= max) {
-                        status.textContent = "❌ ENCERRADO";
-                        status.style.color = "#e74c3c";
-                    } else {
-                        status.textContent = `✓ ${max - count} vagas restantes`;
-                        status.style.color = "#27ae60";
-                    }
+                const data = localStorage.getItem(`inscriptions_${i}`);
+                if (data) {
+                    try {
+                        inscriptions[i] = JSON.parse(data);
+                    } catch (e) {}
                 }
             }
 
+            updateDisplay();
+        }
+
+        function saveData() {
+            localStorage.setItem('headerTitle', headerTitle);
+            localStorage.setItem('headerDesc', headerDesc);
+
+            for (let i = 0; i < 3; i++) {
+                localStorage.setItem(`inscriptions_${i}`, JSON.stringify(inscriptions[i]));
+            }
+        }
+
+        function updateDisplay() {
+            document.getElementById("headerTitle").textContent = headerTitle;
+            document.getElementById("headerDesc").textContent = headerDesc;
             updateInscriptionsList();
         }
 
@@ -462,10 +521,10 @@
                 
                 html += `
                     <div class="inscription-item">
-                        <div class="inscription-name">✓ ${insc.full_name || insc.fullName}</div>
+                        <div class="inscription-name">✓ ${insc.fullName}</div>
                         <div class="inscription-email">${insc.email}</div>
                         ${insc.phone ? `<div class="inscription-email">${insc.phone}</div>` : ''}
-                        <div class="inscription-date">${insc.course_name || courses[insc.courseIndex].name} • ${dateStr}</div>
+                        <div class="inscription-email" style="font-size: 11px; color: #999;">${courses[insc.courseIndex].name} • ${dateStr}</div>
                     </div>
                 `;
             });
@@ -477,24 +536,27 @@
             document.getElementById("mainPage").classList.remove("hidden");
             document.getElementById("loginPage").classList.add("hidden");
             document.getElementById("adminPage").classList.add("hidden");
-            updateMainPageText();
             setupFormHandlers();
         }
 
-        function showAdminPage() {
-            if (adminLoggedIn) {
-                document.getElementById("mainPage").classList.add("hidden");
-                document.getElementById("loginPage").classList.add("hidden");
-                document.getElementById("adminPage").classList.remove("hidden");
-                const info = document.getElementById("adminInfo");
-                info.textContent = useSupabase ? "☁️ Usando Supabase - Online" : "💾 Usando localStorage";
-                loadAdminData();
-                loadData();
+        function goToAdmin() {
+            if (localStorage.getItem("adminLoggedIn") === "true") {
+                adminLoggedIn = true;
+                showAdminPage();
             } else {
                 document.getElementById("mainPage").classList.add("hidden");
                 document.getElementById("loginPage").classList.remove("hidden");
                 document.getElementById("adminPage").classList.add("hidden");
             }
+        }
+
+        function showAdminPage() {
+            document.getElementById("mainPage").classList.add("hidden");
+            document.getElementById("loginPage").classList.add("hidden");
+            document.getElementById("adminPage").classList.remove("hidden");
+            document.getElementById("adminTitle").value = headerTitle;
+            document.getElementById("adminDesc").value = headerDesc;
+            loadData();
         }
 
         function loginAdmin() {
@@ -503,6 +565,7 @@
                 adminLoggedIn = true;
                 localStorage.setItem("adminLoggedIn", "true");
                 document.getElementById("adminPassword").value = "";
+                document.getElementById("loginError").style.display = "none";
                 showAdminPage();
             } else {
                 document.getElementById("loginError").textContent = "Senha incorreta!";
@@ -513,22 +576,10 @@
         function logout() {
             adminLoggedIn = false;
             localStorage.removeItem("adminLoggedIn");
-            window.location.hash = "";
             showMainPage();
         }
 
-        function loadAdminData() {
-            document.getElementById("adminTitle").value = headerTitle;
-            document.getElementById("adminDesc").value = headerDesc;
-            updatePreview();
-        }
-
-        function updatePreview() {
-            document.getElementById("previewTitle").textContent = document.getElementById("adminTitle").value || "Seu título aqui";
-            document.getElementById("previewDesc").textContent = document.getElementById("adminDesc").value || "Sua descrição aqui";
-        }
-
-        async function saveTextChanges() {
+        function saveTextChanges() {
             const title = document.getElementById("adminTitle").value.trim();
             const desc = document.getElementById("adminDesc").value.trim();
 
@@ -539,59 +590,9 @@
 
             headerTitle = title;
             headerDesc = desc;
-            await saveData();
-            updateMainPageText();
+            saveData();
+            updateDisplay();
             alert("Texto salvo com sucesso!");
-            updatePreview();
-        }
-
-        function updateMainPageText() {
-            document.getElementById("headerTitle").textContent = headerTitle;
-            document.getElementById("headerDesc").textContent = headerDesc;
-        }
-
-        function previewBackground(event) {
-            const file = event.target.files[0];
-            if (!file || file.size > 5 * 1024 * 1024) {
-                alert("Arquivo muito grande! Máximo 5MB");
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                tempBackgroundImage = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        async function saveBackground() {
-            if (!tempBackgroundImage) {
-                alert("Selecione uma imagem primeiro!");
-                return;
-            }
-
-            backgroundImage = tempBackgroundImage;
-            await saveData();
-            applyBackground();
-            alert("Fundo salvo com sucesso!");
-        }
-
-        function applyBackground() {
-            if (backgroundImage) {
-                document.body.classList.add("custom-bg");
-                document.body.style.setProperty("--bg-image", `url('${backgroundImage}')`);
-            }
-        }
-
-        async function resetBackground() {
-            if (confirm("Resetar fundo?")) {
-                backgroundImage = null;
-                tempBackgroundImage = null;
-                await saveData();
-                document.body.classList.remove("custom-bg");
-                document.getElementById("backgroundFile").value = "";
-                alert("Fundo resetado!");
-            }
         }
 
         function downloadInscriptions() {
@@ -600,28 +601,21 @@
             for (let i = 0; i < 3; i++) {
                 inscriptions[i].forEach(insc => {
                     const date = new Date(insc.timestamp);
-                    csv += `"${date.toLocaleDateString('pt-BR')}","${date.toLocaleTimeString('pt-BR')}","${insc.course_name || courses[i].name}","${insc.full_name || insc.fullName}","${insc.email}","${insc.phone || ''}"\n`;
+                    csv += `"${date.toLocaleDateString('pt-BR')}","${date.toLocaleTimeString('pt-BR')}","${courses[i].name}","${insc.fullName}","${insc.email}","${insc.phone || ''}"\n`;
                 });
             }
 
             const element = document.createElement("a");
             element.setAttribute("href", "data:text/csv;charset=utf-8," + encodeURIComponent(csv));
-            element.setAttribute("download", "inscricoes_" + new Date().toISOString().split('T')[0] + ".csv");
+            element.setAttribute("download", "inscricoes.csv");
             element.click();
         }
 
-        async function clearAllInscriptions() {
+        function clearAllInscriptions() {
             if (!confirm("Apagar TODAS as inscrições?")) return;
-
-            if (useSupabase) {
-                try {
-                    await supabase.from('inscriptions').delete().neq('id', '');
-                } catch (error) {}
-            }
-
             inscriptions = { 0: [], 1: [], 2: [] };
-            await saveData();
-            updateVacancyDisplay();
+            saveData();
+            updateInscriptionsList();
             alert("Inscrições apagadas!");
         }
 
@@ -632,11 +626,9 @@
             const submitBtn = document.getElementById("submitBtn");
             const courseDetails = document.getElementById("courseDetails");
             const successMsg = document.getElementById("successMsg");
-            const errorMsg = document.getElementById("errorMsg");
 
             courseSelect.addEventListener("change", function() {
                 successMsg.style.display = "none";
-                errorMsg.style.display = "none";
 
                 if (this.value === "") {
                     courseDetails.classList.remove("show");
@@ -654,13 +646,13 @@
                 document.getElementById("courseDetailDesc").textContent = course.desc;
 
                 if (isFull) {
-                    courseDetails.classList.add("closed");
+                    courseDetails.classList.add("show");
                     document.getElementById("courseDetailTitle").textContent = "❌ " + course.name + " - ENCERRADO";
                     document.getElementById("courseDetailDesc").textContent = "As vagas se encerraram";
                     formInputs.forEach(el => el.style.display = "none");
                     submitBtn.style.display = "none";
                 } else {
-                    courseDetails.classList.remove("closed");
+                    courseDetails.classList.remove("show", "closed");
                     formInputs.forEach(el => el.style.display = "block");
                     submitBtn.style.display = "block";
                     
@@ -668,23 +660,20 @@
                     const vacancy = document.getElementById("courseDetailVacancy");
                     
                     if (course.vagas === Infinity) {
-                        bar.style.width = "0%";
                         bar.parentElement.style.display = "none";
                         vacancy.textContent = "Aberto";
-                        vacancy.className = "vacancy-open";
                     } else {
                         const percentage = (count / course.vagas) * 100;
                         bar.style.width = percentage + "%";
                         bar.parentElement.style.display = "flex";
                         vacancy.textContent = `${count} / ${course.vagas}`;
-                        vacancy.className = "vacancy-text";
                     }
-                }
 
-                courseDetails.classList.add("show");
+                    courseDetails.classList.add("show");
+                }
             });
 
-            form.addEventListener("submit", async function(e) {
+            form.addEventListener("submit", function(e) {
                 e.preventDefault();
 
                 const courseIdx = parseInt(courseSelect.value);
@@ -692,8 +681,7 @@
                 const count = inscriptions[courseIdx].length;
 
                 if (count >= course.vagas && course.vagas !== Infinity) {
-                    errorMsg.textContent = "As vagas se encerraram";
-                    errorMsg.style.display = "block";
+                    alert("As vagas se encerraram");
                     return;
                 }
 
@@ -704,55 +692,29 @@
                     timestamp: new Date().toISOString()
                 };
 
-                const success = await saveInscription(courseIdx, userData);
+                inscriptions[courseIdx].push(userData);
+                saveData();
 
-                if (success) {
-                    successMsg.textContent = `Parabéns ${userData.fullName}! Inscrição confirmada em "${course.name}"`;
-                    successMsg.style.display = "block";
-                    errorMsg.style.display = "none";
-                    form.reset();
-                    courseDetails.classList.remove("show");
-                    courseSelect.value = "";
-                    formInputs.forEach(el => el.style.display = "none");
-                    submitBtn.style.display = "none";
-                    loadData();
-                } else {
-                    errorMsg.textContent = "Erro ao enviar inscrição. Tente novamente.";
-                    errorMsg.style.display = "block";
-                }
+                successMsg.textContent = `Parabéns ${userData.fullName}! Inscrição confirmada em "${course.name}"`;
+                successMsg.style.display = "block";
+                form.reset();
+                courseDetails.classList.remove("show");
+                courseSelect.value = "";
+                formInputs.forEach(el => el.style.display = "none");
+                submitBtn.style.display = "none";
+                
+                updateInscriptionsList();
             });
         }
 
-        async function init() {
-            await initSupabase();
-            
-            if (localStorage.getItem("adminLoggedIn") === "true") {
-                adminLoggedIn = true;
-            }
-
-            await loadData();
-
-            if (window.location.hash === "#admin") {
-                showAdminPage();
-            } else {
-                showMainPage();
-            }
-        }
-
-        window.addEventListener("load", init);
-        window.addEventListener("hashchange", () => {
-            if (window.location.hash === "#admin") {
-                showAdminPage();
-            } else {
-                showMainPage();
-            }
+        // Inicializar
+        window.addEventListener("load", function() {
+            loadData();
+            showMainPage();
         });
 
-        setInterval(() => {
-            if (!adminLoggedIn) {
-                loadData();
-            }
-        }, 5000);
+        // Recarregar dados a cada 3 segundos
+        setInterval(loadData, 3000);
     </script>
 </body>
 </html>
