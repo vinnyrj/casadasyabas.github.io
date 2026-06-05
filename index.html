@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Inscrições - Casa das Yabás</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -53,6 +54,16 @@
             font-size: 14px;
             border: 1px solid #c3e6cb;
             display: none;
+        }
+        .sync-status {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 10px 14px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 12px;
+            border: 1px solid #bee5eb;
+            text-align: center;
         }
         .form-input-group {
             margin-bottom: 18px;
@@ -342,6 +353,7 @@
             </div>
 
             <div class="form-container">
+                <div class="sync-status" id="syncStatus"></div>
                 <div id="successMsg" class="success-msg"></div>
 
                 <form id="inscriptionForm">
@@ -417,6 +429,8 @@
             </div>
 
             <div class="admin-content">
+                <div class="sync-status" id="adminSyncStatus" style="margin-bottom: 20px;"></div>
+
                 <!-- Editar Texto -->
                 <div class="admin-section">
                     <h2>✏️ Editar Texto</h2>
@@ -437,7 +451,7 @@
                 <div class="admin-section">
                     <h2>📝 Inscrições Recebidas</h2>
                     <div id="inscriptionsList" class="inscriptions-list">
-                        <p style="text-align: center; color: #999; padding: 20px;">Nenhuma inscrição ainda</p>
+                        <p style="text-align: center; color: #999; padding: 20px;">Carregando inscrições...</p>
                     </div>
                     <div class="admin-buttons">
                         <button class="admin-btn" onclick="downloadInscriptions()">📥 Baixar CSV</button>
@@ -453,44 +467,155 @@
 
     <script>
         const ADMIN_PASSWORD = "admin123";
+        const SUPABASE_URL = "https://xbwqlcczptvwzueraezp.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_2DTgvr4H5RhRjr5zGCpLGQ_7x8-c4Nj";
+
         const courses = [
             { name: "Consulta", desc: "Serviço de consulta personalizada.", vagas: 24 },
             { name: "Axé Individual", desc: "Sessão individual de axé para você.", vagas: 8 },
             { name: "Axé Coletivo", desc: "Reunião coletiva de axé aberta a todos.", vagas: Infinity }
         ];
 
+        let supabase = null;
+        let isSupabaseActive = false;
         let adminLoggedIn = false;
         let inscriptions = { 0: [], 1: [], 2: [] };
         let headerTitle = "Inscreva-se nos nossos serviços";
         let headerDesc = "Escolha uma das modalidades abaixo e preencha seus dados para se inscrever";
 
-        function loadData() {
-            const title = localStorage.getItem('headerTitle');
-            const desc = localStorage.getItem('headerDesc');
-            
-            if (title) headerTitle = title;
-            if (desc) headerDesc = desc;
+        // Inicializar Supabase
+        async function initSupabase() {
+            try {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                const { data } = await supabase.from('inscriptions').select('count', { count: 'exact' });
+                isSupabaseActive = true;
+                updateSyncStatus('☁️ Conectado ao Supabase');
+                console.log('✅ Supabase OK');
+                
+                // Inscrever em atualizações em tempo real
+                supabase.channel('inscriptions-changes')
+                    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'inscriptions' }, () => {
+                        loadData();
+                    })
+                    .subscribe();
+                    
+                return true;
+            } catch (error) {
+                isSupabaseActive = false;
+                updateSyncStatus('💾 Usando modo local');
+                console.log('⚠️ Supabase não disponível:', error.message);
+                return false;
+            }
+        }
 
-            inscriptions = { 0: [], 1: [], 2: [] };
-            for (let i = 0; i < 3; i++) {
-                const data = localStorage.getItem(`inscriptions_${i}`);
-                if (data) {
-                    try {
-                        inscriptions[i] = JSON.parse(data);
-                    } catch (e) {}
+        function updateSyncStatus(msg) {
+            const status = document.getElementById('syncStatus');
+            const adminStatus = document.getElementById('adminSyncStatus');
+            if (status) status.textContent = msg;
+            if (adminStatus) adminStatus.textContent = msg;
+        }
+
+        // Carregar dados
+        async function loadData() {
+            if (isSupabaseActive) {
+                try {
+                    // Carregar inscrições do Supabase
+                    const { data: inscData, error } = await supabase
+                        .from('inscriptions')
+                        .select('*')
+                        .order('timestamp', { ascending: false });
+
+                    if (!error && inscData) {
+                        inscriptions = { 0: [], 1: [], 2: [] };
+                        inscData.forEach(insc => {
+                            if (inscriptions[insc.course_index] !== undefined) {
+                                inscriptions[insc.course_index].push(insc);
+                            }
+                        });
+                    }
+
+                    // Carregar configurações
+                    const { data: settingsData } = await supabase
+                        .from('settings')
+                        .select('*')
+                        .eq('id', 1)
+                        .single();
+
+                    if (settingsData) {
+                        headerTitle = settingsData.header_title || headerTitle;
+                        headerDesc = settingsData.header_desc || headerDesc;
+                    }
+                } catch (error) {
+                    console.log('Erro ao carregar:', error);
+                }
+            } else {
+                // Carregar do localStorage
+                const title = localStorage.getItem('headerTitle');
+                const desc = localStorage.getItem('headerDesc');
+                
+                if (title) headerTitle = title;
+                if (desc) headerDesc = desc;
+
+                inscriptions = { 0: [], 1: [], 2: [] };
+                for (let i = 0; i < 3; i++) {
+                    const data = localStorage.getItem(`inscriptions_${i}`);
+                    if (data) {
+                        try {
+                            inscriptions[i] = JSON.parse(data);
+                        } catch (e) {}
+                    }
                 }
             }
 
             updateDisplay();
         }
 
-        function saveData() {
-            localStorage.setItem('headerTitle', headerTitle);
-            localStorage.setItem('headerDesc', headerDesc);
-
-            for (let i = 0; i < 3; i++) {
-                localStorage.setItem(`inscriptions_${i}`, JSON.stringify(inscriptions[i]));
+        // Salvar dados
+        async function saveData() {
+            if (isSupabaseActive) {
+                try {
+                    await supabase.from('settings').upsert({
+                        id: 1,
+                        header_title: headerTitle,
+                        header_desc: headerDesc
+                    }).eq('id', 1);
+                } catch (error) {
+                    console.log('Erro ao salvar:', error);
+                }
+            } else {
+                localStorage.setItem('headerTitle', headerTitle);
+                localStorage.setItem('headerDesc', headerDesc);
             }
+        }
+
+        // Salvar inscrição
+        async function saveInscription(courseIdx, userData) {
+            if (isSupabaseActive) {
+                try {
+                    const { error } = await supabase.from('inscriptions').insert([{
+                        course_index: courseIdx,
+                        course_name: courses[courseIdx].name,
+                        full_name: userData.fullName,
+                        email: userData.email,
+                        phone: userData.phone
+                    }]);
+
+                    if (!error) {
+                        return true;
+                    }
+                } catch (error) {
+                    console.log('Erro:', error);
+                }
+            } else {
+                inscriptions[courseIdx].push({
+                    ...userData,
+                    timestamp: new Date().toISOString(),
+                    course_name: courses[courseIdx].name
+                });
+                localStorage.setItem(`inscriptions_${courseIdx}`, JSON.stringify(inscriptions[courseIdx]));
+                return true;
+            }
+            return false;
         }
 
         function updateDisplay() {
@@ -521,10 +646,10 @@
                 
                 html += `
                     <div class="inscription-item">
-                        <div class="inscription-name">✓ ${insc.fullName}</div>
+                        <div class="inscription-name">✓ ${insc.full_name || insc.fullName}</div>
                         <div class="inscription-email">${insc.email}</div>
                         ${insc.phone ? `<div class="inscription-email">${insc.phone}</div>` : ''}
-                        <div class="inscription-email" style="font-size: 11px; color: #999;">${courses[insc.courseIndex].name} • ${dateStr}</div>
+                        <div class="inscription-email" style="font-size: 11px; color: #999;">${insc.course_name || courses[insc.courseIndex].name} • ${dateStr}</div>
                     </div>
                 `;
             });
@@ -601,7 +726,7 @@
             for (let i = 0; i < 3; i++) {
                 inscriptions[i].forEach(insc => {
                     const date = new Date(insc.timestamp);
-                    csv += `"${date.toLocaleDateString('pt-BR')}","${date.toLocaleTimeString('pt-BR')}","${courses[i].name}","${insc.fullName}","${insc.email}","${insc.phone || ''}"\n`;
+                    csv += `"${date.toLocaleDateString('pt-BR')}","${date.toLocaleTimeString('pt-BR')}","${insc.course_name || courses[i].name}","${insc.full_name || insc.fullName}","${insc.email}","${insc.phone || ''}"\n`;
                 });
             }
 
@@ -613,10 +738,21 @@
 
         function clearAllInscriptions() {
             if (!confirm("Apagar TODAS as inscrições?")) return;
-            inscriptions = { 0: [], 1: [], 2: [] };
-            saveData();
-            updateInscriptionsList();
-            alert("Inscrições apagadas!");
+
+            if (isSupabaseActive) {
+                supabase.from('inscriptions').delete().neq('id', '00000000-0000-0000-0000-000000000000').then(() => {
+                    inscriptions = { 0: [], 1: [], 2: [] };
+                    updateInscriptionsList();
+                    alert("Inscrições apagadas!");
+                });
+            } else {
+                inscriptions = { 0: [], 1: [], 2: [] };
+                for (let i = 0; i < 3; i++) {
+                    localStorage.removeItem(`inscriptions_${i}`);
+                }
+                updateInscriptionsList();
+                alert("Inscrições apagadas!");
+            }
         }
 
         function setupFormHandlers() {
@@ -673,7 +809,7 @@
                 }
             });
 
-            form.addEventListener("submit", function(e) {
+            form.addEventListener("submit", async function(e) {
                 e.preventDefault();
 
                 const courseIdx = parseInt(courseSelect.value);
@@ -692,29 +828,44 @@
                     timestamp: new Date().toISOString()
                 };
 
-                inscriptions[courseIdx].push(userData);
-                saveData();
+                const success = await saveInscription(courseIdx, userData);
 
-                successMsg.textContent = `Parabéns ${userData.fullName}! Inscrição confirmada em "${course.name}"`;
-                successMsg.style.display = "block";
-                form.reset();
-                courseDetails.classList.remove("show");
-                courseSelect.value = "";
-                formInputs.forEach(el => el.style.display = "none");
-                submitBtn.style.display = "none";
-                
-                updateInscriptionsList();
+                if (success) {
+                    successMsg.textContent = `Parabéns ${userData.fullName}! Inscrição confirmada em "${course.name}"`;
+                    successMsg.style.display = "block";
+                    form.reset();
+                    courseDetails.classList.remove("show");
+                    courseSelect.value = "";
+                    formInputs.forEach(el => el.style.display = "none");
+                    submitBtn.style.display = "none";
+                    
+                    await loadData();
+                } else {
+                    alert("Erro ao enviar inscrição. Tente novamente.");
+                }
             });
         }
 
         // Inicializar
-        window.addEventListener("load", function() {
-            loadData();
-            showMainPage();
-        });
+        async function init() {
+            await initSupabase();
+            
+            if (localStorage.getItem("adminLoggedIn") === "true") {
+                adminLoggedIn = true;
+            }
 
-        // Recarregar dados a cada 3 segundos
-        setInterval(loadData, 3000);
+            await loadData();
+            showMainPage();
+        }
+
+        window.addEventListener("load", init);
+
+        // Recarregar dados a cada 2 segundos
+        setInterval(() => {
+            if (!adminLoggedIn) {
+                loadData();
+            }
+        }, 2000);
     </script>
 </body>
 </html>
