@@ -54,16 +54,6 @@
             border: 1px solid #c3e6cb;
             display: none;
         }
-        .error-msg {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 14px 16px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            border: 1px solid #f5c6cb;
-            display: none;
-        }
         .form-input-group {
             margin-bottom: 18px;
         }
@@ -175,6 +165,9 @@
             text-decoration: none;
             font-size: 14px;
             font-weight: 500;
+        }
+        .admin-link a:hover {
+            text-decoration: underline;
         }
         .admin-container {
             width: 100%;
@@ -341,7 +334,7 @@
 </head>
 <body>
     <!-- Página Principal -->
-    <div id="mainPage">
+    <div id="mainPage" class="hidden">
         <div class="container">
             <div class="header-section">
                 <h1 id="headerTitle">Inscreva-se nos nossos serviços</h1>
@@ -350,7 +343,6 @@
 
             <div class="form-container">
                 <div id="successMsg" class="success-msg"></div>
-                <div id="errorMsg" class="error-msg"></div>
 
                 <form id="inscriptionForm">
                     <div class="form-input-group">
@@ -412,7 +404,7 @@
             <div class="error-box" id="loginError"></div>
             <input type="password" id="adminPassword" placeholder="Senha" onkeypress="if(event.key==='Enter') loginAdmin()">
             <button class="login-btn" onclick="loginAdmin()">Entrar</button>
-            <p style="margin-top: 20px; font-size: 12px; color: #999;">Senha: <strong>admin123</strong></p>
+            <p style="margin-top: 20px; font-size: 12px; color: #999;">Senha padrão: <strong>admin123</strong></p>
         </div>
     </div>
 
@@ -461,51 +453,16 @@
 
     <script>
         const ADMIN_PASSWORD = "admin123";
-        const SUPABASE_URL = "https://xbwqlcczptvwzueraezp.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_2DTgvr4H5RhRjr5zGCpLGQ_7x8-c4Nj";
-
         const courses = [
             { name: "Consulta", desc: "Serviço de consulta personalizada.", vagas: 24 },
             { name: "Axé Individual", desc: "Sessão individual de axé para você.", vagas: 8 },
             { name: "Axé Coletivo", desc: "Reunião coletiva de axé aberta a todos.", vagas: Infinity }
         ];
 
-        let supabase = null;
-        let useCloud = false;
         let adminLoggedIn = false;
         let inscriptions = { 0: [], 1: [], 2: [] };
         let headerTitle = "Inscreva-se nos nossos serviços";
         let headerDesc = "Escolha uma das modalidades abaixo e preencha seus dados para se inscrever";
-
-        // Tentar inicializar Supabase
-        async function trySupabase() {
-            try {
-                if (!window.supabase) {
-                    console.log("Supabase não carregou");
-                    return false;
-                }
-
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                
-                // Teste rápido
-                const { data, error } = await Promise.race([
-                    supabase.from('inscriptions').select('count', { count: 'exact' }),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
-                ]);
-
-                if (error) {
-                    console.log("Erro Supabase:", error);
-                    return false;
-                }
-
-                useCloud = true;
-                console.log("✅ Supabase OK");
-                return true;
-            } catch (error) {
-                console.log("⚠️ Supabase falhou:", error.message);
-                return false;
-            }
-        }
 
         function loadData() {
             const title = localStorage.getItem('headerTitle');
@@ -534,42 +491,6 @@
             for (let i = 0; i < 3; i++) {
                 localStorage.setItem(`inscriptions_${i}`, JSON.stringify(inscriptions[i]));
             }
-
-            // Se Supabase estiver ativo, salvar lá também
-            if (useCloud && supabase) {
-                try {
-                    supabase.from('settings').upsert({
-                        id: 1,
-                        header_title: headerTitle,
-                        header_desc: headerDesc
-                    }).eq('id', 1).catch(() => {});
-                } catch (e) {}
-            }
-        }
-
-        async function saveInscription(courseIdx, userData) {
-            inscriptions[courseIdx].push({
-                ...userData,
-                timestamp: new Date().toISOString(),
-                course_name: courses[courseIdx].name
-            });
-
-            localStorage.setItem(`inscriptions_${courseIdx}`, JSON.stringify(inscriptions[courseIdx]));
-
-            // Se Supabase estiver ativo, salvar lá também
-            if (useCloud && supabase) {
-                try {
-                    await supabase.from('inscriptions').insert([{
-                        course_index: courseIdx,
-                        course_name: courses[courseIdx].name,
-                        full_name: userData.fullName,
-                        email: userData.email,
-                        phone: userData.phone
-                    }]).catch(() => {});
-                } catch (e) {}
-            }
-
-            return true;
         }
 
         function updateDisplay() {
@@ -603,7 +524,7 @@
                         <div class="inscription-name">✓ ${insc.fullName}</div>
                         <div class="inscription-email">${insc.email}</div>
                         ${insc.phone ? `<div class="inscription-email">${insc.phone}</div>` : ''}
-                        <div class="inscription-email" style="font-size: 11px; color: #999;">${insc.course_name} • ${dateStr}</div>
+                        <div class="inscription-email" style="font-size: 11px; color: #999;">${courses[insc.courseIndex].name} • ${dateStr}</div>
                     </div>
                 `;
             });
@@ -680,7 +601,7 @@
             for (let i = 0; i < 3; i++) {
                 inscriptions[i].forEach(insc => {
                     const date = new Date(insc.timestamp);
-                    csv += `"${date.toLocaleDateString('pt-BR')}","${date.toLocaleTimeString('pt-BR')}","${insc.course_name}","${insc.fullName}","${insc.email}","${insc.phone || ''}"\n`;
+                    csv += `"${date.toLocaleDateString('pt-BR')}","${date.toLocaleTimeString('pt-BR')}","${courses[i].name}","${insc.fullName}","${insc.email}","${insc.phone || ''}"\n`;
                 });
             }
 
@@ -731,7 +652,7 @@
                     formInputs.forEach(el => el.style.display = "none");
                     submitBtn.style.display = "none";
                 } else {
-                    courseDetails.classList.remove("show");
+                    courseDetails.classList.remove("show", "closed");
                     formInputs.forEach(el => el.style.display = "block");
                     submitBtn.style.display = "block";
                     
@@ -752,7 +673,7 @@
                 }
             });
 
-            form.addEventListener("submit", async function(e) {
+            form.addEventListener("submit", function(e) {
                 e.preventDefault();
 
                 const courseIdx = parseInt(courseSelect.value);
@@ -771,7 +692,8 @@
                     timestamp: new Date().toISOString()
                 };
 
-                await saveInscription(courseIdx, userData);
+                inscriptions[courseIdx].push(userData);
+                saveData();
 
                 successMsg.textContent = `Parabéns ${userData.fullName}! Inscrição confirmada em "${course.name}"`;
                 successMsg.style.display = "block";
@@ -781,30 +703,18 @@
                 formInputs.forEach(el => el.style.display = "none");
                 submitBtn.style.display = "none";
                 
-                updateDisplay();
+                updateInscriptionsList();
             });
         }
 
         // Inicializar
-        async function init() {
+        window.addEventListener("load", function() {
             loadData();
-            
-            if (localStorage.getItem("adminLoggedIn") === "true") {
-                adminLoggedIn = true;
-            }
-
-            // Tentar Supabase em background
-            setTimeout(() => trySupabase(), 100);
-
             showMainPage();
-        }
+        });
 
-        // Executar quando carregado
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-        } else {
-            init();
-        }
+        // Recarregar dados a cada 3 segundos
+        setInterval(loadData, 3000);
     </script>
 </body>
 </html>
