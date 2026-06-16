@@ -54,6 +54,16 @@
             border: 1px solid #c3e6cb;
             display: none;
         }
+        .sync-status {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 10px 14px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 12px;
+            border: 1px solid #bee5eb;
+            text-align: center;
+        }
         .form-input-group {
             margin-bottom: 18px;
         }
@@ -165,9 +175,6 @@
             text-decoration: none;
             font-size: 14px;
             font-weight: 500;
-        }
-        .admin-link a:hover {
-            text-decoration: underline;
         }
         .admin-container {
             width: 100%;
@@ -334,7 +341,7 @@
 </head>
 <body>
     <!-- Página Principal -->
-    <div id="mainPage" class="hidden">
+    <div id="mainPage">
         <div class="container">
             <div class="header-section">
                 <h1 id="headerTitle">Inscreva-se nos nossos serviços</h1>
@@ -342,6 +349,7 @@
             </div>
 
             <div class="form-container">
+                <div class="sync-status" id="syncStatus">🔄 Sincronizando...</div>
                 <div id="successMsg" class="success-msg"></div>
 
                 <form id="inscriptionForm">
@@ -404,7 +412,7 @@
             <div class="error-box" id="loginError"></div>
             <input type="password" id="adminPassword" placeholder="Senha" onkeypress="if(event.key==='Enter') loginAdmin()">
             <button class="login-btn" onclick="loginAdmin()">Entrar</button>
-            <p style="margin-top: 20px; font-size: 12px; color: #999;">Senha padrão: <strong>admin123</strong></p>
+            <p style="margin-top: 20px; font-size: 12px; color: #999;">Senha: <strong>admin123</strong></p>
         </div>
     </div>
 
@@ -417,6 +425,8 @@
             </div>
 
             <div class="admin-content">
+                <div class="sync-status" id="adminSyncStatus" style="margin-bottom: 20px;">☁️ Sincronizado com JSONBin</div>
+
                 <!-- Editar Texto -->
                 <div class="admin-section">
                     <h2>✏️ Editar Texto</h2>
@@ -437,7 +447,7 @@
                 <div class="admin-section">
                     <h2>📝 Inscrições Recebidas</h2>
                     <div id="inscriptionsList" class="inscriptions-list">
-                        <p style="text-align: center; color: #999; padding: 20px;">Nenhuma inscrição ainda</p>
+                        <p style="text-align: center; color: #999; padding: 20px;">Carregando inscrições...</p>
                     </div>
                     <div class="admin-buttons">
                         <button class="admin-btn" onclick="downloadInscriptions()">📥 Baixar CSV</button>
@@ -453,6 +463,9 @@
 
     <script>
         const ADMIN_PASSWORD = "admin123";
+        const JSONBIN_URL = "https://api.jsonbin.io/v3/b/6a312d61da38895dfec905e6";
+        const JSONBIN_WRITE_KEY = "$2b$10$f0U.j34QGQlkSM3qM7sKM.JdGpCUGvHQqkVHZu9Y5Z7h6EQpQQvYK";
+
         const courses = [
             { name: "Consulta", desc: "Serviço de consulta personalizada.", vagas: 24 },
             { name: "Axé Individual", desc: "Sessão individual de axé para você.", vagas: 8 },
@@ -464,33 +477,61 @@
         let headerTitle = "Inscreva-se nos nossos serviços";
         let headerDesc = "Escolha uma das modalidades abaixo e preencha seus dados para se inscrever";
 
-        function loadData() {
-            const title = localStorage.getItem('headerTitle');
-            const desc = localStorage.getItem('headerDesc');
-            
-            if (title) headerTitle = title;
-            if (desc) headerDesc = desc;
+        async function loadData() {
+            try {
+                const response = await fetch(JSONBIN_URL);
+                const result = await response.json();
+                const data = result.record;
 
-            inscriptions = { 0: [], 1: [], 2: [] };
-            for (let i = 0; i < 3; i++) {
-                const data = localStorage.getItem(`inscriptions_${i}`);
-                if (data) {
-                    try {
-                        inscriptions[i] = JSON.parse(data);
-                    } catch (e) {}
-                }
+                headerTitle = data.headerTitle || headerTitle;
+                headerDesc = data.headerDesc || headerDesc;
+                inscriptions = {
+                    0: data.inscriptions_0 || [],
+                    1: data.inscriptions_1 || [],
+                    2: data.inscriptions_2 || []
+                };
+
+                updateDisplay();
+                updateSyncStatus('✓ Sincronizado');
+            } catch (error) {
+                console.error('Erro ao carregar:', error);
+                updateSyncStatus('❌ Erro ao sincronizar');
             }
-
-            updateDisplay();
         }
 
-        function saveData() {
-            localStorage.setItem('headerTitle', headerTitle);
-            localStorage.setItem('headerDesc', headerDesc);
+        async function saveData() {
+            try {
+                const payload = {
+                    headerTitle,
+                    headerDesc,
+                    inscriptions_0: inscriptions[0],
+                    inscriptions_1: inscriptions[1],
+                    inscriptions_2: inscriptions[2]
+                };
 
-            for (let i = 0; i < 3; i++) {
-                localStorage.setItem(`inscriptions_${i}`, JSON.stringify(inscriptions[i]));
+                const response = await fetch(JSONBIN_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': JSONBIN_WRITE_KEY
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    updateSyncStatus('✓ Salvo');
+                } else {
+                    updateSyncStatus('❌ Erro ao salvar');
+                }
+            } catch (error) {
+                console.error('Erro ao salvar:', error);
+                updateSyncStatus('❌ Erro ao salvar');
             }
+        }
+
+        function updateSyncStatus(msg) {
+            const status = document.getElementById('syncStatus');
+            if (status) status.textContent = msg;
         }
 
         function updateDisplay() {
@@ -504,7 +545,7 @@
             let allInscriptions = [];
 
             for (let i = 0; i < 3; i++) {
-                inscriptions[i].forEach(insc => {
+                (inscriptions[i] || []).forEach(insc => {
                     allInscriptions.push({...insc, courseIndex: i});
                 });
             }
@@ -515,7 +556,7 @@
             }
 
             let html = '';
-            allInscriptions.slice(0, 20).forEach(insc => {
+            allInscriptions.slice(0, 50).forEach(insc => {
                 const date = new Date(insc.timestamp);
                 const dateStr = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR');
                 
@@ -579,7 +620,7 @@
             showMainPage();
         }
 
-        function saveTextChanges() {
+        async function saveTextChanges() {
             const title = document.getElementById("adminTitle").value.trim();
             const desc = document.getElementById("adminDesc").value.trim();
 
@@ -590,7 +631,7 @@
 
             headerTitle = title;
             headerDesc = desc;
-            saveData();
+            await saveData();
             updateDisplay();
             alert("Texto salvo com sucesso!");
         }
@@ -599,7 +640,7 @@
             let csv = "Data,Hora,Tipo,Nome,Email,Telefone\n";
 
             for (let i = 0; i < 3; i++) {
-                inscriptions[i].forEach(insc => {
+                (inscriptions[i] || []).forEach(insc => {
                     const date = new Date(insc.timestamp);
                     csv += `"${date.toLocaleDateString('pt-BR')}","${date.toLocaleTimeString('pt-BR')}","${courses[i].name}","${insc.fullName}","${insc.email}","${insc.phone || ''}"\n`;
                 });
@@ -611,10 +652,10 @@
             element.click();
         }
 
-        function clearAllInscriptions() {
+        async function clearAllInscriptions() {
             if (!confirm("Apagar TODAS as inscrições?")) return;
             inscriptions = { 0: [], 1: [], 2: [] };
-            saveData();
+            await saveData();
             updateInscriptionsList();
             alert("Inscrições apagadas!");
         }
@@ -639,7 +680,7 @@
 
                 const idx = parseInt(this.value);
                 const course = courses[idx];
-                const count = inscriptions[idx].length;
+                const count = (inscriptions[idx] || []).length;
                 const isFull = count >= course.vagas && course.vagas !== Infinity;
 
                 document.getElementById("courseDetailTitle").textContent = course.name;
@@ -652,7 +693,7 @@
                     formInputs.forEach(el => el.style.display = "none");
                     submitBtn.style.display = "none";
                 } else {
-                    courseDetails.classList.remove("show", "closed");
+                    courseDetails.classList.remove("show");
                     formInputs.forEach(el => el.style.display = "block");
                     submitBtn.style.display = "block";
                     
@@ -673,12 +714,12 @@
                 }
             });
 
-            form.addEventListener("submit", function(e) {
+            form.addEventListener("submit", async function(e) {
                 e.preventDefault();
 
                 const courseIdx = parseInt(courseSelect.value);
                 const course = courses[courseIdx];
-                const count = inscriptions[courseIdx].length;
+                const count = (inscriptions[courseIdx] || []).length;
 
                 if (count >= course.vagas && course.vagas !== Infinity) {
                     alert("As vagas se encerraram");
@@ -693,7 +734,7 @@
                 };
 
                 inscriptions[courseIdx].push(userData);
-                saveData();
+                await saveData();
 
                 successMsg.textContent = `Parabéns ${userData.fullName}! Inscrição confirmada em "${course.name}"`;
                 successMsg.style.display = "block";
@@ -703,18 +744,24 @@
                 formInputs.forEach(el => el.style.display = "none");
                 submitBtn.style.display = "none";
                 
-                updateInscriptionsList();
+                loadData();
             });
         }
 
         // Inicializar
-        window.addEventListener("load", function() {
-            loadData();
-            showMainPage();
-        });
+        async function init() {
+            if (localStorage.getItem("adminLoggedIn") === "true") {
+                adminLoggedIn = true;
+            }
 
-        // Recarregar dados a cada 3 segundos
-        setInterval(loadData, 3000);
+            await loadData();
+            showMainPage();
+
+            // Recarregar dados a cada 3 segundos
+            setInterval(loadData, 3000);
+        }
+
+        window.addEventListener("load", init);
     </script>
 </body>
 </html>
